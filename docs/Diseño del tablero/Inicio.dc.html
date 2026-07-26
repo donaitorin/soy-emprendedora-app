@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0}
+  @keyframes scaleIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+  @keyframes toastIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(105vh) rotate(540deg);opacity:0}}
+  ::-webkit-scrollbar{height:9px;width:9px}
+  ::-webkit-scrollbar-thumb{background:rgba(140,120,100,0.3);border-radius:9px}
+</style>
+</helmet>
+<div style="{{ themeVars }}">
+<div style="display:flex;min-height:100vh;background:var(--bg,#F4EDE4);color:var(--text,#2D2823);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;transition:background .3s ease">
+
+  <aside style="width:248px;flex-shrink:0;background:var(--surface,#fff);border-right:1px solid var(--border,#E7DCCF);padding:26px 20px;display:flex;flex-direction:column;gap:5px;position:sticky;top:0;height:100vh;transition:background .3s ease">
+    <div style="display:flex;align-items:center;gap:12px;padding:0 4px 22px">
+      <div style="width:40px;height:40px;border-radius:11px;background:var(--accent,#BE6A4E);color:var(--on-accent,#fff);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:19px;flex-shrink:0">T</div>
+      <div style="line-height:1.15">
+        <div style="font-family:'Playfair Display',serif;font-weight:600;font-size:16px;color:var(--text,#2D2823)">El Tablero</div>
+        <div style="font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600">de la Empresaria</div>
+      </div>
+    </div>
+
+    <div onClick="{{ goInicio }}" style="{{ navInicioStyle }}">
+      <sc-if value="{{ isInicio }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--accent,#BE6A4E)"></div></sc-if>
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Inicio
+    </div>
+    <div onClick="{{ goDinero }}" style="{{ navDineroStyle }}">
+      <sc-if value="{{ isDinero }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--accent,#BE6A4E)"></div></sc-if>
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+      Dinero
+    </div>
+    <div onClick="{{ goAudiencia }}" style="{{ navAudienciaStyle }}">
+      <sc-if value="{{ isAudiencia }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--accent,#BE6A4E)"></div></sc-if>
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg>
+      Audiencia
+    </div>
+    <div onClick="{{ goLeads }}" style="{{ navLeadsStyle }}">
+      <sc-if value="{{ isLeads }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--accent,#BE6A4E)"></div></sc-if>
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Leads
+    </div>
+    <div onClick="{{ goAcciones }}" style="{{ navAccionesStyle }}">
+      <sc-if value="{{ isAcciones }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--accent,#BE6A4E)"></div></sc-if>
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Acciones
+    </div>
+
+    <div style="margin-top:auto;display:flex;align-items:center;gap:12px;padding:12px 10px;border-top:1px solid var(--border,#E7DCCF)">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--surface-2,#F6EFE6);border:1px solid var(--border,#E7DCCF);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--accent,#BE6A4E)">V</div>
+      <div style="line-height:1.25">
+        <div style="font-weight:600;font-size:13px;color:var(--text,#2D2823)">Valeria Sosa</div>
+        <div style="font-size:11px;color:var(--text-3,#B7AB9B)">Plan Raíz</div>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;padding:30px 40px 56px;display:flex;flex-direction:column;gap:24px;max-width:1320px;width:100%">
+
+    <!-- ════════ INICIO ════════ -->
+    <sc-if value="{{ isInicio }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <header style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap">
+        <div>
+          <div style="display:flex;align-items:center;gap:11px">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent,#BE6A4E)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            <h1 style="margin:0;font-family:'Playfair Display',serif;font-weight:600;font-size:28px;color:var(--text,#2D2823)">Buenos días, Valeria.</h1>
+          </div>
+          <p style="margin:7px 0 0 33px;font-size:14.5px;color:var(--text-2,#877C6E)">Hoy es miércoles · Foco del día: <span style="color:var(--accent,#BE6A4E);font-weight:600">Leads</span></p>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text-2,#877C6E)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+            Miércoles 11 de junio
+          </div>
+          <button onClick="{{ openIngreso }}" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border:none;border-radius:10px;background:var(--accent,#BE6A4E);color:var(--on-accent,#fff);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>
+            Registrar ingreso
+          </button>
+        </div>
+      </header>
+
+      <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow,0 1px 3px rgba(60,45,30,0.05));padding:18px 20px;display:flex;flex-direction:column;gap:13px">
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:9px;background:var(--accent-soft,rgba(190,106,78,0.13));color:var(--accent,#BE6A4E);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div><span style="font-size:11px;letter-spacing:0.7px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600">Ingresos hoy</span></div>
+          <div style="font-weight:900;font-size:30px;line-height:1;color:var(--text,#2D2823)">{{ moneyHoy }}</div>
+          <div style="font-size:12.5px"><span style="color:var(--pos,#4F8A6B);font-weight:700">↑ 15%</span> <span style="color:var(--text-3,#B7AB9B)">vs ayer</span></div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow,0 1px 3px rgba(60,45,30,0.05));padding:18px 20px;display:flex;flex-direction:column;gap:13px">
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:9px;background:var(--accent-soft,rgba(190,106,78,0.13));color:var(--accent,#BE6A4E);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg></div><span style="font-size:11px;letter-spacing:0.7px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600">Alcance</span></div>
+          <div style="font-weight:900;font-size:30px;line-height:1;color:var(--text,#2D2823)">1.240</div>
+          <div style="font-size:12.5px"><span style="color:var(--danger,#C0584F);font-weight:700">↓ 8%</span> <span style="color:var(--text-3,#B7AB9B)">vs ayer</span></div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow,0 1px 3px rgba(60,45,30,0.05));padding:18px 20px;display:flex;flex-direction:column;gap:13px">
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:9px;background:var(--accent-soft,rgba(190,106,78,0.13));color:var(--accent,#BE6A4E);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><span style="font-size:11px;letter-spacing:0.7px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600">Leads activos</span></div>
+          <div style="font-weight:900;font-size:30px;line-height:1;color:var(--text,#2D2823)">{{ activasCount }}</div>
+          <div style="font-size:12.5px"><span style="color:var(--pos,#4F8A6B);font-weight:700">↑ 1</span> <span style="color:var(--text-3,#B7AB9B)">nuevo hoy</span></div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow,0 1px 3px rgba(60,45,30,0.05));padding:18px 20px;display:flex;flex-direction:column;gap:13px">
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:9px;background:var(--accent-soft,rgba(190,106,78,0.13));color:var(--accent,#BE6A4E);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><span style="font-size:11px;letter-spacing:0.7px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600">Tareas de hoy</span></div>
+          <div style="font-weight:900;font-size:30px;line-height:1;color:var(--text,#2D2823)">{{ tareasLabel }}</div>
+          <div style="height:6px;border-radius:999px;background:var(--surface-2,#F6EFE6);overflow:hidden"><div style="{{ tareasBarStyle }}"></div></div>
+        </div>
+      </section>
+
+      <section style="display:grid;grid-template-columns:1.5fr 1fr;gap:20px;align-items:start">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow,0 1px 3px rgba(60,45,30,0.05));padding:22px 24px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--danger,#C0584F)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <h2 style="margin:0;font-family:'Playfair Display',serif;font-weight:600;font-size:19px;color:var(--text,#2D2823)">Atención hoy</h2>
+          </div>
+
+          <div style="border-radius:12px;border-left:3px solid var(--warn,#CC9A4D);background:var(--warn-soft,rgba(204,154,77,0.14));padding:15px 17px;margin-bottom:14px">
+            <sc-if value="{{ a0Active }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;color:var(--text,#2D2823)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warn,#CC9A4D)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg>Llevás 2 días sin publicar</div>
+              <p style="margin:7px 0 0 25px;font-size:13px;line-height:1.5;color:var(--text-2,#877C6E)">Tu alcance cayó 22% esta semana. Publicar hoy puede revertirlo.</p>
+              <sc-if value="{{ a0Collapsed }}" hint-placeholder-val="{{ true }}"><button onClick="{{ expandA0 }}" style="margin:11px 0 0 25px;padding:0;border:none;background:none;color:var(--accent,#BE6A4E);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer">Ver acción →</button></sc-if>
+              <sc-if value="{{ a0Expanded }}" hint-placeholder-val="{{ false }}">
+                <div style="margin:12px 0 0 25px;background:var(--surface-2,#F6EFE6);border-radius:10px;padding:13px 15px">
+                  <div style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600;margin-bottom:6px">Acción sugerida</div>
+                  <div style="font-size:13.5px;color:var(--text,#2D2823);line-height:1.5;margin-bottom:12px">Publicá un reel corto mostrando tu proceso de hoy. La consistencia es el factor #1 de alcance.</div>
+                  <button onClick="{{ doneA0 }}" style="display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border:none;border-radius:9px;background:var(--accent,#BE6A4E);color:var(--on-accent,#fff);font-family:'Inter',sans-serif;font-weight:600;font-size:12.5px;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Marcar como hecha</button>
+                </div>
+              </sc-if>
+            </sc-if>
+            <sc-if value="{{ a0Done }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:9px;opacity:0.6"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--pos,#4F8A6B)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span style="font-weight:600;font-size:15px;color:var(--text-2,#877C6E);text-decoration:line-through">Llevás 2 días sin publicar</span><span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--pos,#4F8A6B);background:var(--pos-soft,rgba(79,138,107,0.13));padding:3px 9px;border-radius:999px">Hecha</span></div>
+            </sc-if>
+          </div>
+
+          <div style="border-radius:12px;border-left:3px solid var(--danger,#C0584F);background:var(--danger-soft,rgba(192,88,79,0.12));padding:15px 17px">
+            <sc-if value="{{ a1Active }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;color:var(--text,#2D2823)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--danger,#C0584F)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Laura y Carmen llevan +48h sin respuesta</div>
+              <p style="margin:7px 0 0 25px;font-size:13px;line-height:1.5;color:var(--text-2,#877C6E)">Dos leads en conversación se están enfriando. Un mensaje hoy las reactiva.</p>
+              <sc-if value="{{ a1Collapsed }}" hint-placeholder-val="{{ true }}"><button onClick="{{ expandA1 }}" style="margin:11px 0 0 25px;padding:0;border:none;background:none;color:var(--accent,#BE6A4E);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer">Ver acción →</button></sc-if>
+              <sc-if value="{{ a1Expanded }}" hint-placeholder-val="{{ false }}">
+                <div style="margin:12px 0 0 25px;background:var(--surface-2,#F6EFE6);border-radius:10px;padding:13px 15px">
+                  <div style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600;margin-bottom:6px">Acción sugerida</div>
+                  <div style="font-size:13.5px;color:var(--text,#2D2823);line-height:1.5;margin-bottom:12px">Escribiles un seguimiento corto hoy: confirmá que seguís disponible y preguntá si tienen alguna duda sobre la propuesta.</div>
+                  <div style="display:flex;gap:9px;flex-wrap:wrap">
+                    <button onClick="{{ doneA1 }}" style="display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border:none;border-radius:9px;background:var(--accent,#BE6A4E);color:var(--on-accent,#fff);font-family:'Inter',sans-serif;font-weight:600;font-size:12.5px;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Marcar como hecha</button>
+                    <button onClick="{{ delegar }}" style="display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border:1px solid var(--border,#E7DCCF);border-radius:9px;background:none;color:var(--text-2,#877C6E);font-family:'Inter',sans-serif;font-weight:600;font-size:12.5px;cursor:pointer">Delegar ↗</button>
+                  </div>
+                </div>
+              </sc-if>
+            </sc-if>
+            <sc-if value="{{ a1Done }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:9px;opacity:0.6"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--pos,#4F8A6B)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span style="font-weight:600;font-size:15px;color:var(--text-2,#877C6E);text-decoration:line-through">Laura y Carmen llevan +48h sin respuesta</span><span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--pos,#4F8A6B);background:var(--pos-soft,rgba(79,138,107,0.13));padding:3px 9px;border-radius:999px">Hecha</span></div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow,0 1px 3px rgba(60,45,30,0.05));padding:22px 24px">
+          <div style="font-size:11px;letter-spacing:0.7px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600">Foco de hoy</div>
+          <div style="display:flex;align-items:baseline;gap:10px;margin-top:4px"><h2 style="margin:0;font-family:'Playfair Display',serif;font-weight:600;font-size:22px;color:var(--text,#2D2823)">Leads</h2><span style="font-size:12px;color:var(--text-2,#877C6E)">día de conexión</span></div>
+          <div style="margin-top:18px;display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;gap:11px;padding:11px 4px;border-bottom:1px solid var(--border,#E7DCCF)"><span style="width:9px;height:9px;border-radius:50%;background:#B655C9;flex-shrink:0"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px;color:var(--text,#2D2823)">María</div><div style="font-size:11.5px;color:var(--text-3,#B7AB9B)">Instagram DM · nuevo contacto</div></div><span style="font-size:11px;font-weight:600;color:var(--text-2,#877C6E)">hoy</span></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:11px 4px;border-bottom:1px solid var(--border,#E7DCCF)"><span style="width:9px;height:9px;border-radius:50%;background:#3FA56A;flex-shrink:0"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px;color:var(--text,#2D2823)">Laura</div><div style="font-size:11.5px;color:var(--text-3,#B7AB9B)">WhatsApp · en conversación</div></div><span style="font-size:11px;font-weight:700;color:var(--danger,#C0584F);background:var(--danger-soft,rgba(192,88,79,0.12));padding:3px 8px;border-radius:999px">2 días</span></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:11px 4px"><span style="width:9px;height:9px;border-radius:50%;background:#4A86C9;flex-shrink:0"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px;color:var(--text,#2D2823)">Carmen</div><div style="font-size:11.5px;color:var(--text-3,#B7AB9B)">Referida · propuesta enviada</div></div><span style="font-size:11px;font-weight:700;color:var(--danger,#C0584F);background:var(--danger-soft,rgba(192,88,79,0.12));padding:3px 8px;border-radius:999px">3 días</span></div>
+          </div>
+          <button onClick="{{ goLeads }}" style="margin-top:16px;width:100%;padding:10px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:none;color:var(--accent,#BE6A4E);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer">Ver pipeline completo →</button>
+        </div>
+      </section>
+
+      <section style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow,0 1px 3px rgba(60,45,30,0.05));padding:22px 24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:6px">
+          <h2 style="margin:0;font-family:'Playfair Display',serif;font-weight:600;font-size:19px;color:var(--text,#2D2823)">Esta semana</h2>
+          <div style="display:flex;gap:8px">
+            <button onClick="{{ toggleIng }}" style="display:flex;align-items:center;gap:7px;padding:6px 11px;border:1px solid var(--border,#E7DCCF);border-radius:999px;background:var(--surface-2,#F6EFE6);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--text-2,#877C6E);cursor:pointer"><sc-if value="{{ sIng }}" hint-placeholder-val="{{ true }}"><span style="width:9px;height:9px;border-radius:50%;background:var(--accent,#BE6A4E)"></span></sc-if><sc-if value="{{ ingOff }}" hint-placeholder-val="{{ false }}"><span style="width:9px;height:9px;border-radius:50%;border:1.5px solid var(--text-3,#B7AB9B)"></span></sc-if>Ingresos</button>
+            <button onClick="{{ toggleAlc }}" style="display:flex;align-items:center;gap:7px;padding:6px 11px;border:1px solid var(--border,#E7DCCF);border-radius:999px;background:var(--surface-2,#F6EFE6);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--text-2,#877C6E);cursor:pointer"><sc-if value="{{ sAlc }}" hint-placeholder-val="{{ true }}"><span style="width:9px;height:9px;border-radius:50%;background:var(--pos,#4F8A6B)"></span></sc-if><sc-if value="{{ alcOff }}" hint-placeholder-val="{{ false }}"><span style="width:9px;height:9px;border-radius:50%;border:1.5px solid var(--text-3,#B7AB9B)"></span></sc-if>Alcance</button>
+            <button onClick="{{ toggleLed }}" style="display:flex;align-items:center;gap:7px;padding:6px 11px;border:1px solid var(--border,#E7DCCF);border-radius:999px;background:var(--surface-2,#F6EFE6);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--text-2,#877C6E);cursor:pointer"><sc-if value="{{ sLed }}" hint-placeholder-val="{{ true }}"><span style="width:9px;height:9px;border-radius:50%;background:var(--warn,#CC9A4D)"></span></sc-if><sc-if value="{{ ledOff }}" hint-placeholder-val="{{ false }}"><span style="width:9px;height:9px;border-radius:50%;border:1.5px solid var(--text-3,#B7AB9B)"></span></sc-if>Leads</button>
+          </div>
+        </div>
+        <div style="position:relative">
+          <div style="{{ tipStyle }}">
+            <div style="background:var(--text,#2D2823);color:var(--bg,#F4EDE4);border-radius:10px;padding:10px 13px;box-shadow:0 6px 20px rgba(0,0,0,0.18);min-width:130px">
+              <div style="font-family:'Playfair Display',serif;font-size:13px;font-weight:600;margin-bottom:7px">{{ hoveredDay.label }}</div>
+              <div style="display:flex;align-items:center;gap:7px;font-size:12px;margin-bottom:3px"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent,#BE6A4E)"></span>Ingresos <span style="margin-left:auto;font-weight:700">{{ hoveredDay.ing }}</span></div>
+              <div style="display:flex;align-items:center;gap:7px;font-size:12px;margin-bottom:3px"><span style="width:7px;height:7px;border-radius:50%;background:var(--pos,#4F8A6B)"></span>Alcance <span style="margin-left:auto;font-weight:700">{{ hoveredDay.alc }}</span></div>
+              <div style="display:flex;align-items:center;gap:7px;font-size:12px"><span style="width:7px;height:7px;border-radius:50%;background:var(--warn,#CC9A4D)"></span>Leads <span style="margin-left:auto;font-weight:700">{{ hoveredDay.led }}</span></div>
+            </div>
+          </div>
+          <svg viewBox="0 0 920 250" style="display:block;width:100%;height:auto" preserveAspectRatio="none">
+            <line x1="40" y1="20" x2="880" y2="20" stroke="var(--border,#E7DCCF)" stroke-width="1"/>
+            <line x1="40" y1="105" x2="880" y2="105" stroke="var(--border,#E7DCCF)" stroke-width="1"/>
+            <line x1="40" y1="190" x2="880" y2="190" stroke="var(--border,#E7DCCF)" stroke-width="1"/>
+            <line x1="320" y1="18" x2="320" y2="200" stroke="var(--text-3,#B7AB9B)" stroke-width="1" stroke-dasharray="3 4"/>
+            <text x="320" y="11" text-anchor="middle" fill="var(--accent,#BE6A4E)" style="font:600 9px Inter,sans-serif;letter-spacing:1px">HOY</text>
+            <sc-if value="{{ sAlc }}" hint-placeholder-val="{{ true }}"><polyline points="40,162.1 180,106.3 320,129.1 460,83.4 600,20 740,190 880,146.9" fill="none" stroke="var(--pos,#4F8A6B)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></sc-if>
+            <sc-if value="{{ sIng }}" hint-placeholder-val="{{ true }}"><polyline points="40,190 180,122 320,88 460,151.8 600,20 740,190 880,113.5" fill="none" stroke="var(--accent,#BE6A4E)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></sc-if>
+            <sc-if value="{{ sLed }}" hint-placeholder-val="{{ true }}"><polyline points="40,133.3 180,190 320,20 460,76.7 600,133.3 740,190 880,76.7" fill="none" stroke="var(--warn,#CC9A4D)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></sc-if>
+            <sc-if value="{{ hoverActive }}" hint-placeholder-val="{{ false }}"><line x1="{{ hoveredDay.x }}" y1="18" x2="{{ hoveredDay.x }}" y2="200" stroke="var(--accent,#BE6A4E)" stroke-width="1.5" stroke-dasharray="2 3"/></sc-if>
+            <text x="40" y="232" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 12px Inter,sans-serif">L</text>
+            <text x="180" y="232" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 12px Inter,sans-serif">M</text>
+            <text x="320" y="232" text-anchor="middle" fill="var(--accent,#BE6A4E)" style="font:700 12px Inter,sans-serif">X</text>
+            <text x="460" y="232" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 12px Inter,sans-serif">J</text>
+            <text x="600" y="232" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 12px Inter,sans-serif">V</text>
+            <text x="740" y="232" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 12px Inter,sans-serif">S</text>
+            <text x="880" y="232" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 12px Inter,sans-serif">D</text>
+            <sc-for list="{{ days }}" as="d" hint-placeholder-count="7"><rect x="{{ d.rectX }}" y="0" width="130" height="210" fill="transparent" style="cursor:pointer" onMouseEnter="{{ d.enter }}" onMouseLeave="{{ clearHover }}"></rect></sc-for>
+          </svg>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <!-- ════════ DINERO (paleta Salvia) ════════ -->
+    <sc-if value="{{ isDinero }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <header style="display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap">
+        <h1 style="margin:0;font-family:'Playfair Display',serif;font-weight:600;font-size:28px;color:var(--text,#2A312A)">Dinero</h1>
+        <div style="display:flex;gap:10px">
+          <button onClick="{{ openIngreso }}" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border:none;border-radius:10px;background:var(--accent,#3F7A6B);color:var(--on-accent,#fff);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>Ingreso</button>
+          <button onClick="{{ openGasto }}" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border:1px solid var(--border,#D5DCC9);border-radius:10px;background:var(--surface,#fff);color:var(--text-2,#74806E);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>Gasto</button>
+        </div>
+      </header>
+
+      <section style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#D5DCC9);border-radius:16px;box-shadow:var(--shadow);padding:18px 22px"><div style="font-size:11px;letter-spacing:0.7px;text-transform:uppercase;color:var(--text-3,#A7B099);font-weight:600;margin-bottom:8px">Ingresos hoy</div><div style="font-weight:900;font-size:28px;color:var(--pos,#4F8A5E)">{{ moneyHoy }}</div></div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#D5DCC9);border-radius:16px;box-shadow:var(--shadow);padding:18px 22px"><div style="font-size:11px;letter-spacing:0.7px;text-transform:uppercase;color:var(--text-3,#A7B099);font-weight:600;margin-bottom:8px">Gastos hoy</div><div style="font-weight:900;font-size:28px;color:var(--text,#2A312A)">{{ gastosFmt }}</div></div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#D5DCC9);border-radius:16px;box-shadow:var(--shadow);padding:18px 22px"><div style="font-size:11px;letter-spacing:0.7px;text-transform:uppercase;color:var(--text-3,#A7B099);font-weight:600;margin-bottom:8px">Resultado del día</div><div style="display:flex;align-items:center;gap:9px"><div style="font-weight:900;font-size:28px;color:var(--pos,#4F8A5E)">{{ resultadoFmt }}</div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--pos,#4F8A5E)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div></div>
+      </section>
+
+      <section style="background:var(--surface,#fff);border:1px solid var(--border,#D5DCC9);border-radius:16px;box-shadow:var(--shadow);padding:22px 24px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px"><h2 style="margin:0;font-family:'Playfair Display',serif;font-weight:600;font-size:18px;color:var(--text,#2A312A)">Meta del mes</h2><span style="font-size:13px;color:var(--text-2,#74806E)"><b style="color:var(--text,#2A312A)">$850</b> de $1.500</span></div>
+        <div style="height:14px;border-radius:999px;background:var(--surface-2,#E3E8DC);overflow:hidden"><div style="width:57%;height:100%;border-radius:999px;background:var(--accent,#3F7A6B)"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:10px"><span style="font-size:13px;color:var(--accent,#3F7A6B);font-weight:700">57%</span><span style="font-size:13px;color:var(--text-2,#74806E)">A este ritmo cerrarás el mes en <b style="color:var(--text,#2A312A)">$1.100</b>.</span></div>
+      </section>
+
+      <section style="display:grid;grid-template-columns:1.5fr 1fr;gap:20px;align-items:start">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#D5DCC9);border-radius:16px;box-shadow:var(--shadow);padding:22px 24px">
+          <h2 style="margin:0 0 16px;font-family:'Playfair Display',serif;font-weight:600;font-size:18px;color:var(--text,#2A312A)">Ingresos del mes</h2>
+          <svg viewBox="0 0 580 150" style="display:block;width:100%;height:auto">
+            <line x1="0" y1="130" x2="580" y2="130" stroke="var(--border,#D5DCC9)" stroke-width="1"/>
+            <sc-for list="{{ dineroBars }}" as="b" hint-placeholder-count="14"><rect x="{{ b.x }}" y="{{ b.y }}" width="22" height="{{ b.h }}" rx="3" fill="{{ b.fill }}"></rect></sc-for>
+          </svg>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text-3,#A7B099)"><span>1 jun</span><span>11 jun · hoy</span></div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#D5DCC9);border-radius:16px;box-shadow:var(--shadow);padding:22px 24px">
+          <h2 style="margin:0 0 18px;font-family:'Playfair Display',serif;font-weight:600;font-size:18px;color:var(--text,#2A312A)">Por fuente</h2>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:var(--text,#2A312A);font-weight:600">Mentoría 1:1</span><span style="color:var(--text-2,#74806E)">60%</span></div><div style="height:9px;border-radius:999px;background:var(--surface-2,#E3E8DC)"><div style="width:60%;height:100%;border-radius:999px;background:var(--accent,#3F7A6B)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:var(--text,#2A312A);font-weight:600">Comunidad</span><span style="color:var(--text-2,#74806E)">30%</span></div><div style="height:9px;border-radius:999px;background:var(--surface-2,#E3E8DC)"><div style="width:30%;height:100%;border-radius:999px;background:var(--accent,#3F7A6B);opacity:0.7"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:var(--text,#2A312A);font-weight:600">Productos digitales</span><span style="color:var(--text-2,#74806E)">10%</span></div><div style="height:9px;border-radius:999px;background:var(--surface-2,#E3E8DC)"><div style="width:10%;height:100%;border-radius:999px;background:var(--accent,#3F7A6B);opacity:0.45"></div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section style="background:var(--surface,#fff);border:1px solid var(--border,#D5DCC9);border-radius:16px;box-shadow:var(--shadow);padding:22px 24px">
+        <h2 style="margin:0 0 16px;font-family:'Playfair Display',serif;font-weight:600;font-size:18px;color:var(--text,#2A312A)">Histórico · últimos 6 meses</h2>
+        <svg viewBox="0 0 560 150" style="display:block;width:100%;height:auto" preserveAspectRatio="none">
+          <line x1="20" y1="120" x2="540" y2="120" stroke="var(--border,#D5DCC9)" stroke-width="1"/>
+          <polyline points="20,120 124,95 228,61.7 332,80.4 436,20 540,72.1" fill="none" stroke="var(--accent,#3F7A6B)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="436" cy="20" r="4" fill="var(--accent,#3F7A6B)"/>
+          <text x="20" y="142" text-anchor="middle" fill="var(--text-3,#A7B099)" style="font:600 11px Inter,sans-serif">Ene</text>
+          <text x="124" y="142" text-anchor="middle" fill="var(--text-3,#A7B099)" style="font:600 11px Inter,sans-serif">Feb</text>
+          <text x="228" y="142" text-anchor="middle" fill="var(--text-3,#A7B099)" style="font:600 11px Inter,sans-serif">Mar</text>
+          <text x="332" y="142" text-anchor="middle" fill="var(--text-3,#A7B099)" style="font:600 11px Inter,sans-serif">Abr</text>
+          <text x="436" y="142" text-anchor="middle" fill="var(--text-3,#A7B099)" style="font:600 11px Inter,sans-serif">May</text>
+          <text x="540" y="142" text-anchor="middle" fill="var(--text-3,#A7B099)" style="font:600 11px Inter,sans-serif">Jun</text>
+        </svg>
+      </section>
+    </div>
+    </sc-if>
+
+    <!-- ════════ AUDIENCIA ════════ -->
+    <sc-if value="{{ isAudiencia }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <header style="display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap">
+        <h1 style="margin:0;font-family:'Playfair Display',serif;font-weight:600;font-size:28px;color:var(--text,#2D2823)">Audiencia</h1>
+        <div style="display:flex;align-items:center;gap:14px">
+          <span style="display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--text-2,#877C6E)"><span style="width:8px;height:8px;border-radius:50%;background:var(--pos,#4F8A6B)"></span>Instagram conectado</span>
+          <button onClick="{{ sincronizar }}" style="display:flex;align-items:center;gap:7px;padding:8px 14px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:var(--surface,#fff);color:var(--text-2,#877C6E);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>Sincronizar ahora</button>
+        </div>
+      </header>
+
+      <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px"><div style="font-size:11px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600;margin-bottom:9px">Alcance</div><div style="font-weight:900;font-size:26px;color:var(--text,#2D2823)">1.240</div><div style="font-size:12px;margin-top:6px"><span style="color:var(--danger,#C0584F);font-weight:700">↓ 8%</span></div></div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px"><div style="font-size:11px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600;margin-bottom:9px">Impresiones</div><div style="font-weight:900;font-size:26px;color:var(--text,#2D2823)">3.800</div><div style="font-size:12px;margin-top:6px"><span style="color:var(--pos,#4F8A6B);font-weight:700">↑ 3%</span></div></div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px"><div style="font-size:11px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600;margin-bottom:9px">Seguidores</div><div style="font-weight:900;font-size:26px;color:var(--text,#2D2823)">+12</div><div style="font-size:12px;margin-top:6px;color:var(--text-3,#B7AB9B)">+14 / −2 hoy</div></div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px"><div style="font-size:11px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600;margin-bottom:9px">Interacciones</div><div style="font-weight:900;font-size:26px;color:var(--text,#2D2823)">89</div><div style="font-size:12px;margin-top:6px"><span style="color:var(--pos,#4F8A6B);font-weight:700">↑ 22%</span></div></div>
+      </section>
+
+      <section style="display:grid;grid-template-columns:1fr 1.6fr;gap:20px;align-items:start">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:22px 24px">
+          <h2 style="margin:0 0 14px;font-family:'Playfair Display',serif;font-weight:600;font-size:18px;color:var(--text,#2D2823)">Consistencia</h2>
+          <div style="font-size:14px;color:var(--text-2,#877C6E);line-height:1.5;margin-bottom:16px">Publicaste <b style="color:var(--text,#2D2823)">3 de 7 días</b> esta semana.</div>
+          <div style="display:flex;gap:6px;margin-bottom:18px">
+            <div style="flex:1;height:30px;border-radius:7px;background:var(--accent,#BE6A4E)"></div>
+            <div style="flex:1;height:30px;border-radius:7px;background:var(--surface-2,#F6EFE6)"></div>
+            <div style="flex:1;height:30px;border-radius:7px;background:var(--accent,#BE6A4E)"></div>
+            <div style="flex:1;height:30px;border-radius:7px;background:var(--accent,#BE6A4E)"></div>
+            <div style="flex:1;height:30px;border-radius:7px;background:var(--surface-2,#F6EFE6)"></div>
+            <div style="flex:1;height:30px;border-radius:7px;background:var(--surface-2,#F6EFE6)"></div>
+            <div style="flex:1;height:30px;border-radius:7px;background:var(--surface-2,#F6EFE6)"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:12px 14px;border-radius:10px;background:var(--warn-soft,rgba(204,154,77,0.14))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warn,#CC9A4D)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span style="font-size:13px;color:var(--text,#2D2823)">Racha actual: <b>0 días</b></span></div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:22px 24px">
+          <h2 style="margin:0 0 16px;font-family:'Playfair Display',serif;font-weight:600;font-size:18px;color:var(--text,#2D2823)">Alcance esta semana</h2>
+          <svg viewBox="0 0 560 150" style="display:block;width:100%;height:auto">
+            <line x1="0" y1="130" x2="560" y2="130" stroke="var(--border,#E7DCCF)" stroke-width="1"/>
+            <sc-for list="{{ audBars }}" as="b" hint-placeholder-count="7"><rect x="{{ b.x }}" y="{{ b.y }}" width="52" height="{{ b.h }}" rx="5" fill="{{ b.fill }}"></rect></sc-for>
+            <text x="50" y="146" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 11px Inter,sans-serif">L</text>
+            <text x="126" y="146" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 11px Inter,sans-serif">M</text>
+            <text x="202" y="146" text-anchor="middle" fill="var(--accent,#BE6A4E)" style="font:700 11px Inter,sans-serif">X</text>
+            <text x="278" y="146" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 11px Inter,sans-serif">J</text>
+            <text x="354" y="146" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 11px Inter,sans-serif">V</text>
+            <text x="430" y="146" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 11px Inter,sans-serif">S</text>
+            <text x="506" y="146" text-anchor="middle" fill="var(--text-3,#B7AB9B)" style="font:600 11px Inter,sans-serif">D</text>
+          </svg>
+        </div>
+      </section>
+
+      <section style="display:grid;grid-template-columns:1.6fr 1fr;gap:20px;align-items:start">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:22px 24px">
+          <h2 style="margin:0 0 16px;font-family:'Playfair Display',serif;font-weight:600;font-size:18px;color:var(--text,#2D2823)">Top contenido esta semana</h2>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 4px;border-bottom:1px solid var(--border,#E7DCCF)"><span style="font-size:11px;font-weight:700;color:var(--accent,#BE6A4E);background:var(--accent-soft,rgba(190,106,78,0.13));padding:4px 10px;border-radius:7px">REEL</span><div style="flex:1"><div style="font-weight:600;font-size:14px;color:var(--text,#2D2823)">Cómo organizo mi semana</div></div><div style="text-align:right"><div style="font-weight:700;font-size:14px;color:var(--text,#2D2823)">4.200</div><div style="font-size:11px;color:var(--text-3,#B7AB9B)">340 interacciones</div></div></div>
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 4px;border-bottom:1px solid var(--border,#E7DCCF)"><span style="font-size:11px;font-weight:700;color:var(--text-2,#877C6E);background:var(--surface-2,#F6EFE6);padding:4px 10px;border-radius:7px">CARRUSEL</span><div style="flex:1"><div style="font-weight:600;font-size:14px;color:var(--text,#2D2823)">3 errores al poner precios</div></div><div style="text-align:right"><div style="font-weight:700;font-size:14px;color:var(--text,#2D2823)">1.800</div><div style="font-size:11px;color:var(--text-3,#B7AB9B)">120 interacciones</div></div></div>
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 4px"><span style="font-size:11px;font-weight:700;color:var(--text-2,#877C6E);background:var(--surface-2,#F6EFE6);padding:4px 10px;border-radius:7px">HISTORIA</span><div style="flex:1"><div style="font-weight:600;font-size:14px;color:var(--text,#2D2823)">Detrás de una sesión</div></div><div style="text-align:right"><div style="font-weight:700;font-size:14px;color:var(--text,#2D2823)">890</div><div style="font-size:11px;color:var(--text-3,#B7AB9B)">vistas</div></div></div>
+          </div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:22px 24px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px"><h2 style="margin:0;font-family:'Playfair Display',serif;font-weight:600;font-size:18px;color:var(--text,#2D2823)">Meta Ads</h2><span style="font-size:11px;font-weight:600;color:var(--text-3,#B7AB9B)">activo</span></div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-2,#877C6E)">Gasto</span><span style="font-weight:700;font-size:15px;color:var(--text,#2D2823)">$45</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-2,#877C6E)">Alcance pagado</span><span style="font-weight:700;font-size:15px;color:var(--text,#2D2823)">2.100</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-2,#877C6E)">Costo por resultado</span><span style="font-weight:700;font-size:15px;color:var(--text,#2D2823)">$2,14</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <!-- ════════ LEADS ════════ -->
+    <sc-if value="{{ isLeads }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <header style="display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap">
+        <h1 style="margin:0;font-family:'Playfair Display',serif;font-weight:600;font-size:28px;color:var(--text,#2D2823)">Leads</h1>
+        <button onClick="{{ openLead }}" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border:none;border-radius:10px;background:var(--accent,#BE6A4E);color:var(--on-accent,#fff);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>Nueva lead</button>
+      </header>
+
+      <section style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:16px 20px"><div style="font-size:11px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600;margin-bottom:6px">Leads activas</div><div style="font-weight:900;font-size:24px;color:var(--text,#2D2823)">{{ activasCount }}</div></div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:16px 20px"><div style="font-size:11px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600;margin-bottom:6px">Conversión</div><div style="font-weight:900;font-size:24px;color:var(--text,#2D2823)">25%</div></div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:16px 20px"><div style="font-size:11px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-3,#B7AB9B);font-weight:600;margin-bottom:6px">Tiempo promedio</div><div style="font-weight:900;font-size:24px;color:var(--text,#2D2823)">4,2 días</div></div>
+      </section>
+
+      <div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;align-items:start">
+        <div style="flex:1;min-width:194px;background:var(--surface-2,#F6EFE6);border-radius:14px;padding:13px 13px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 3px"><span style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-2,#877C6E);font-weight:700">Nuevo</span><span style="font-size:11px;font-weight:700;color:var(--text-3,#B7AB9B)">{{ countNuevo }}</span></div>
+          <div style="display:flex;flex-direction:column;gap:9px"><sc-for list="{{ colNuevo }}" as="l" hint-placeholder-count="2"><div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:11px;padding:12px 13px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:{{ l.dot }}"></span><span style="font-size:11px;color:var(--text-3,#B7AB9B)">{{ l.canal }}</span><span style="margin-left:auto;font-size:10.5px;font-weight:600;color:var(--text-3,#B7AB9B)">{{ l.diasTxt }}</span></div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:600;font-size:14px;color:var(--text,#2D2823)">{{ l.nombre }}</span><button onClick="{{ l.advance }}" style="width:26px;height:26px;border:1px solid var(--border,#E7DCCF);border-radius:8px;background:var(--surface,#fff);color:var(--accent,#BE6A4E);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">→</button></div></div></sc-for></div>
+        </div>
+        <div style="flex:1;min-width:194px;background:var(--surface-2,#F6EFE6);border-radius:14px;padding:13px 13px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 3px"><span style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-2,#877C6E);font-weight:700">En conversación</span><span style="font-size:11px;font-weight:700;color:var(--text-3,#B7AB9B)">{{ countConv }}</span></div>
+          <div style="display:flex;flex-direction:column;gap:9px"><sc-for list="{{ colConv }}" as="l" hint-placeholder-count="2"><div style="{{ l.cardStyle }}"><div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:{{ l.dot }}"></span><span style="font-size:11px;color:var(--text-3,#B7AB9B)">{{ l.canal }}</span><span style="margin-left:auto;font-size:10.5px;font-weight:700;{{ l.badgeStyle }}">{{ l.diasTxt }}</span></div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:600;font-size:14px;color:var(--text,#2D2823)">{{ l.nombre }}</span><button onClick="{{ l.advance }}" style="width:26px;height:26px;border:1px solid var(--border,#E7DCCF);border-radius:8px;background:var(--surface,#fff);color:var(--accent,#BE6A4E);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">→</button></div></div></sc-for></div>
+        </div>
+        <div style="flex:1;min-width:194px;background:var(--surface-2,#F6EFE6);border-radius:14px;padding:13px 13px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 3px"><span style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-2,#877C6E);font-weight:700">Propuesta</span><span style="font-size:11px;font-weight:700;color:var(--text-3,#B7AB9B)">{{ countProp }}</span></div>
+          <div style="display:flex;flex-direction:column;gap:9px"><sc-for list="{{ colProp }}" as="l" hint-placeholder-count="1"><div style="{{ l.cardStyle }}"><div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:{{ l.dot }}"></span><span style="font-size:11px;color:var(--text-3,#B7AB9B)">{{ l.canal }}</span><span style="margin-left:auto;font-size:10.5px;font-weight:700;{{ l.badgeStyle }}">{{ l.diasTxt }}</span></div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:600;font-size:14px;color:var(--text,#2D2823)">{{ l.nombre }}</span><button onClick="{{ l.advance }}" style="width:26px;height:26px;border:1px solid var(--border,#E7DCCF);border-radius:8px;background:var(--surface,#fff);color:var(--accent,#BE6A4E);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">→</button></div></div></sc-for></div>
+        </div>
+        <div style="flex:1;min-width:194px;background:var(--surface-2,#F6EFE6);border-radius:14px;padding:13px 13px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 3px"><span style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-2,#877C6E);font-weight:700">Agendada</span><span style="font-size:11px;font-weight:700;color:var(--text-3,#B7AB9B)">{{ countAgen }}</span></div>
+          <div style="display:flex;flex-direction:column;gap:9px"><sc-for list="{{ colAgen }}" as="l" hint-placeholder-count="1"><div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:11px;padding:12px 13px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:{{ l.dot }}"></span><span style="font-size:11px;color:var(--text-3,#B7AB9B)">{{ l.canal }}</span><span style="margin-left:auto;font-size:10.5px;font-weight:600;color:var(--text-3,#B7AB9B)">{{ l.diasTxt }}</span></div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:600;font-size:14px;color:var(--text,#2D2823)">{{ l.nombre }}</span><button onClick="{{ l.advance }}" style="width:26px;height:26px;border:1px solid var(--border,#E7DCCF);border-radius:8px;background:var(--surface,#fff);color:var(--accent,#BE6A4E);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">→</button></div></div></sc-for></div>
+        </div>
+        <div style="flex:1;min-width:194px;background:var(--pos-soft,rgba(79,138,107,0.13));border-radius:14px;padding:13px 13px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 3px"><span style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:var(--pos,#4F8A6B);font-weight:700">Convertida</span><span style="font-size:11px;font-weight:700;color:var(--pos,#4F8A6B)">{{ countConvertida }}</span></div>
+          <div style="display:flex;flex-direction:column;gap:9px"><sc-for list="{{ colConvertida }}" as="l" hint-placeholder-count="2"><div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:11px;padding:12px 13px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:{{ l.dot }}"></span><span style="font-size:11px;color:var(--text-3,#B7AB9B)">{{ l.canal }}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--pos,#4F8A6B)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto"><path d="M20 6 9 17l-5-5"/></svg></div><span style="font-weight:600;font-size:14px;color:var(--text,#2D2823)">{{ l.nombre }}</span></div></sc-for></div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ════════ ACCIONES ════════ -->
+    <sc-if value="{{ isAcciones }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:22px;max-width:760px">
+      <header style="display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap">
+        <h1 style="margin:0;font-family:'Playfair Display',serif;font-weight:600;font-size:28px;color:var(--text,#2D2823)">Acciones de hoy</h1>
+        <button onClick="{{ openTarea }}" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:var(--surface,#fff);color:var(--text-2,#877C6E);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>Agregar tarea</button>
+      </header>
+
+      <sc-if value="{{ allDone }}" hint-placeholder-val="{{ false }}">
+        <div style="background:var(--accent-soft,rgba(190,106,78,0.13));border:1px solid var(--accent,#BE6A4E);border-radius:16px;padding:22px 24px;display:flex;align-items:center;gap:16px;animation:scaleIn .3s ease"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--accent,#BE6A4E)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v4M19 17v4M3 5h4M17 19h4"/><path d="M12 3 9.3 9.3 3 12l6.3 2.7L12 21l2.7-6.3L21 12l-6.3-2.7z"/></svg><div><div style="font-family:'Playfair Display',serif;font-weight:600;font-size:21px;color:var(--text,#2D2823)">¡Lo lograste hoy, Valeria!</div><div style="font-size:14px;color:var(--text-2,#877C6E);margin-top:3px">Cerraste todas tus acciones del día. Descansá tranquila.</div></div></div>
+      </sc-if>
+
+      <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:16px;box-shadow:var(--shadow);padding:18px 22px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:14px;color:var(--text,#2D2823)">Completaste <b>{{ doneCount }} de {{ totalTasks }}</b> tareas</span><span style="font-size:13px;font-weight:700;color:var(--accent,#BE6A4E)">{{ pctLabel }}</span></div>
+        <div style="height:8px;border-radius:999px;background:var(--surface-2,#F6EFE6);overflow:hidden"><div style="{{ accPctStyle }}"></div></div>
+      </div>
+
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="width:9px;height:9px;border-radius:50%;background:var(--danger,#C0584F)"></span><span style="font-size:12px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-2,#877C6E);font-weight:700">Alta prioridad</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px"><sc-for list="{{ altaTasks }}" as="t" hint-placeholder-count="2">
+          <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:13px;box-shadow:var(--shadow);padding:15px 17px;display:flex;gap:13px;align-items:flex-start">
+            <div onClick="{{ t.toggle }}" style="{{ t.boxStyle }}"><sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--on-accent,#fff)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></div>
+            <div style="flex:1;min-width:0">
+              <div style="{{ t.titleStyle }}">{{ t.titulo }}</div>
+              <sc-if value="{{ t.hasContexto }}" hint-placeholder-val="{{ true }}"><div style="font-size:12.5px;color:var(--text-2,#877C6E);margin-top:4px">{{ t.contexto }}</div></sc-if>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:9px"><span style="{{ t.chipStyle }}">{{ t.cat }}</span><sc-if value="{{ t.isDelegable }}" hint-placeholder-val="{{ false }}"><button onClick="{{ delegar }}" style="padding:0;border:none;background:none;color:var(--accent,#BE6A4E);font-family:'Inter',sans-serif;font-weight:600;font-size:12px;cursor:pointer">Delegar ↗</button></sc-if></div>
+            </div>
+          </div>
+        </sc-for></div>
+      </div>
+
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="width:9px;height:9px;border-radius:50%;background:var(--warn,#CC9A4D)"></span><span style="font-size:12px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-2,#877C6E);font-weight:700">Media prioridad</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px"><sc-for list="{{ mediaTasks }}" as="t" hint-placeholder-count="2">
+          <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:13px;box-shadow:var(--shadow);padding:15px 17px;display:flex;gap:13px;align-items:flex-start">
+            <div onClick="{{ t.toggle }}" style="{{ t.boxStyle }}"><sc-if value="{{ t.done }}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--on-accent,#fff)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></div>
+            <div style="flex:1;min-width:0"><div style="{{ t.titleStyle }}">{{ t.titulo }}</div><sc-if value="{{ t.hasContexto }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:var(--text-2,#877C6E);margin-top:4px">{{ t.contexto }}</div></sc-if><div style="margin-top:9px"><span style="{{ t.chipStyle }}">{{ t.cat }}</span></div></div>
+          </div>
+        </sc-for></div>
+      </div>
+
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="width:9px;height:9px;border-radius:50%;background:var(--pos,#4F8A6B)"></span><span style="font-size:12px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-2,#877C6E);font-weight:700">Baja prioridad</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px"><sc-for list="{{ bajaTasks }}" as="t" hint-placeholder-count="1">
+          <div style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:13px;box-shadow:var(--shadow);padding:15px 17px;display:flex;gap:13px;align-items:flex-start">
+            <div onClick="{{ t.toggle }}" style="{{ t.boxStyle }}"><sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--on-accent,#fff)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></div>
+            <div style="flex:1;min-width:0"><div style="{{ t.titleStyle }}">{{ t.titulo }}</div><div style="margin-top:9px"><span style="{{ t.chipStyle }}">{{ t.cat }}</span></div></div>
+          </div>
+        </sc-for></div>
+      </div>
+    </div>
+    </sc-if>
+
+  </main>
+</div>
+
+<!-- ════════ MODALES ════════ -->
+<sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeModal }}" style="position:fixed;inset:0;background:rgba(20,12,8,0.45);display:flex;align-items:center;justify-content:center;z-index:50;animation:fadeIn .15s ease">
+    <div onClick="{{ stop }}" style="background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:18px;width:440px;max-width:92vw;padding:26px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:scaleIn .18s ease">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h3 style="margin:0;font-family:'Playfair Display',serif;font-weight:600;font-size:21px;color:var(--text,#2D2823)">{{ modalTitle }}</h3>
+        <button onClick="{{ closeModal }}" style="border:none;background:var(--surface-2,#F6EFE6);width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-2,#877C6E)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+
+      <sc-if value="{{ isModalIngreso }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:15px">
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--text-2,#877C6E)">Monto</span><input ref="{{ montoRef }}" type="text" placeholder="$0" style="padding:11px 13px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:var(--bg,#F4EDE4);color:var(--text,#2D2823);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;outline:none"/></label>
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--text-2,#877C6E)">Fuente</span><select ref="{{ fuenteRef }}" defaultValue="mentoria" style="padding:11px 13px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:var(--bg,#F4EDE4);color:var(--text,#2D2823);font-family:'Inter',sans-serif;font-size:14px;outline:none"><option value="mentoria">Mentoría 1:1</option><option value="comunidad">Comunidad Soy Empresaria</option><option value="claridad">Sesión de Claridad</option><option value="producto">Producto digital</option><option value="otro">Otro</option></select></label>
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--text-2,#877C6E)">Método de pago</span><select ref="{{ metodoRef }}" defaultValue="transferencia" style="padding:11px 13px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:var(--bg,#F4EDE4);color:var(--text,#2D2823);font-family:'Inter',sans-serif;font-size:14px;outline:none"><option value="transferencia">Transferencia</option><option value="stripe">Stripe</option><option value="mercadopago">MercadoPago</option><option value="paypal">PayPal</option><option value="efectivo">Efectivo</option></select></label>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:24px"><button onClick="{{ closeModal }}" style="flex:1;padding:11px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:none;color:var(--text-2,#877C6E);font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer">Cancelar</button><button onClick="{{ submitIngreso }}" style="flex:1;padding:11px;border:none;border-radius:10px;background:var(--accent,#BE6A4E);color:var(--on-accent,#fff);font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer">Registrar</button></div>
+      </sc-if>
+
+      <sc-if value="{{ isModalGasto }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:15px">
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--text-2,#877C6E)">Monto</span><input ref="{{ gastoMontoRef }}" type="text" placeholder="$0" style="padding:11px 13px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:var(--bg,#F4EDE4);color:var(--text,#2D2823);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;outline:none"/></label>
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--text-2,#877C6E)">Categoría</span><select ref="{{ gastoCatRef }}" defaultValue="herramientas" style="padding:11px 13px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:var(--bg,#F4EDE4);color:var(--text,#2D2823);font-family:'Inter',sans-serif;font-size:14px;outline:none"><option value="herramientas">Herramientas / Software</option><option value="publicidad">Publicidad</option><option value="educacion">Educación</option><option value="servicios">Servicios externos</option><option value="otro">Otro</option></select></label>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:24px"><button onClick="{{ closeModal }}" style="flex:1;padding:11px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:none;color:var(--text-2,#877C6E);font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer">Cancelar</button><button onClick="{{ submitGasto }}" style="flex:1;padding:11px;border:none;border-radius:10px;background:var(--accent,#BE6A4E);color:var(--on-accent,#fff);font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer">Registrar</button></div>
+      </sc-if>
+
+      <sc-if value="{{ isModalLead }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:15px">
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--text-2,#877C6E)">Nombre</span><input ref="{{ leadNombreRef }}" type="text" placeholder="Nombre de la lead" style="padding:11px 13px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:var(--bg,#F4EDE4);color:var(--text,#2D2823);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;outline:none"/></label>
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--text-2,#877C6E)">Canal de origen</span><select ref="{{ leadCanalRef }}" defaultValue="instagram" style="padding:11px 13px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:var(--bg,#F4EDE4);color:var(--text,#2D2823);font-family:'Inter',sans-serif;font-size:14px;outline:none"><option value="instagram">Instagram DM</option><option value="whatsapp">WhatsApp</option><option value="referido">Referida</option><option value="web">Web</option><option value="otro">Otro</option></select></label>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:24px"><button onClick="{{ closeModal }}" style="flex:1;padding:11px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:none;color:var(--text-2,#877C6E);font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer">Cancelar</button><button onClick="{{ submitLead }}" style="flex:1;padding:11px;border:none;border-radius:10px;background:var(--accent,#BE6A4E);color:var(--on-accent,#fff);font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer">Agregar</button></div>
+      </sc-if>
+
+      <sc-if value="{{ isModalTarea }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:15px">
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--text-2,#877C6E)">Tarea</span><input ref="{{ tareaTituloRef }}" type="text" placeholder="¿Qué necesitás hacer?" style="padding:11px 13px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:var(--bg,#F4EDE4);color:var(--text,#2D2823);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;outline:none"/></label>
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--text-2,#877C6E)">Prioridad</span><select ref="{{ tareaPrioridadRef }}" defaultValue="media" style="padding:11px 13px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:var(--bg,#F4EDE4);color:var(--text,#2D2823);font-family:'Inter',sans-serif;font-size:14px;outline:none"><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option></select></label>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:24px"><button onClick="{{ closeModal }}" style="flex:1;padding:11px;border:1px solid var(--border,#E7DCCF);border-radius:10px;background:none;color:var(--text-2,#877C6E);font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer">Cancelar</button><button onClick="{{ submitTarea }}" style="flex:1;padding:11px;border:none;border-radius:10px;background:var(--accent,#BE6A4E);color:var(--on-accent,#fff);font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer">Agregar</button></div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+{{ confetti }}
+
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--text,#2D2823);color:var(--bg,#F4EDE4);padding:13px 22px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,0.25);z-index:60;animation:toastIn .25s ease">{{ toast }}</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  montoRef = React.createRef();
+  fuenteRef = React.createRef();
+  metodoRef = React.createRef();
+  gastoMontoRef = React.createRef();
+  gastoCatRef = React.createRef();
+  leadNombreRef = React.createRef();
+  leadCanalRef = React.createRef();
+  tareaTituloRef = React.createRef();
+  tareaPrioridadRef = React.createRef();
+
+  state = {
+    section: 'inicio',
+    money: 120,
+    gastos: 0,
+    expandedA0: false, expandedA1: false,
+    sIng: true, sAlc: true, sLed: true,
+    hover: null,
+    modal: null,
+    toast: null,
+    leads: [
+      { id: 'l1', nombre: 'María', canal: 'Instagram DM', dot: '#B655C9', etapa: 'nuevo', dias: 0 },
+      { id: 'l2', nombre: 'Sofía', canal: 'Web', dot: '#9A8C7A', etapa: 'nuevo', dias: 1 },
+      { id: 'l3', nombre: 'Laura', canal: 'WhatsApp', dot: '#3FA56A', etapa: 'conversacion', dias: 2 },
+      { id: 'l4', nombre: 'Paula', canal: 'Instagram DM', dot: '#B655C9', etapa: 'conversacion', dias: 0 },
+      { id: 'l5', nombre: 'Carmen', canal: 'Referida', dot: '#4A86C9', etapa: 'propuesta', dias: 3 },
+      { id: 'l6', nombre: 'Daniela', canal: 'WhatsApp', dot: '#3FA56A', etapa: 'agendada', dias: 1 },
+      { id: 'l7', nombre: 'Florencia', canal: 'Referida', dot: '#4A86C9', etapa: 'convertida', dias: 0 },
+      { id: 'l8', nombre: 'Lucía', canal: 'Instagram DM', dot: '#B655C9', etapa: 'convertida', dias: 0 },
+    ],
+    tasks: [
+      { id: 't1', titulo: 'Responder a Laura y Carmen', contexto: 'Llevan más de 48h sin seguimiento', cat: 'Leads', prioridad: 'alta', done: false, delegable: true },
+      { id: 't2', titulo: 'Publicar contenido hoy', contexto: 'Llevás 2 días sin publicar · Alcance −22%', cat: 'Audiencia', prioridad: 'alta', done: false, delegable: false },
+      { id: 't3', titulo: 'Registrar el pago de la sesión de ayer', contexto: '', cat: 'Dinero', prioridad: 'media', done: true, delegable: false },
+      { id: 't4', titulo: 'Revisar la propuesta enviada a Carmen', contexto: 'Enviada hace 3 días, sin respuesta', cat: 'Leads', prioridad: 'media', done: true, delegable: false },
+      { id: 't5', titulo: 'Planear el contenido de la próxima semana', contexto: '', cat: 'Audiencia', prioridad: 'baja', done: false, delegable: false },
+    ],
+  };
+
+  go(sec) { this.setState({ section: sec }); try { window.scrollTo(0, 0); } catch (e) {} }
+  setToast(m) { this.setState({ toast: m }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2800); }
+  fmt(n) { return '$' + Math.round(n).toLocaleString('es-AR'); }
+  parseNum(raw) { return parseFloat(String(raw || '').replace(/[^0-9.,]/g, '').replace(/\./g, '').replace(',', '.')); }
+
+  isDone(id) { const t = this.state.tasks.find(x => x.id === id); return t ? t.done : false; }
+  toggleTask(id) { this.setState(s => ({ tasks: s.tasks.map(t => t.id === id ? { ...t, done: !t.done } : t) })); }
+  markTask(id, v) { this.setState(s => ({ tasks: s.tasks.map(t => t.id === id ? { ...t, done: v } : t) })); }
+
+  advanceLead(id) {
+    const order = ['nuevo', 'conversacion', 'propuesta', 'agendada', 'convertida'];
+    this.setState(s => ({ leads: s.leads.map(l => { if (l.id !== id) return l; const i = order.indexOf(l.etapa); return { ...l, etapa: order[Math.min(i + 1, order.length - 1)], dias: 0 }; }) }));
+  }
+
+  delegar() {
+    const txt = 'Hola, necesito que hoy hagas seguimiento a Laura y Carmen en Instagram. Llevan más de 2 días sin respuesta. Por favor confirmales que seguimos disponibles y consultales si tienen alguna duda sobre la propuesta.';
+    try { navigator.clipboard.writeText(txt); } catch (e) {}
+    this.setToast('Texto para delegar copiado ✦');
+  }
+
+  submitIngreso() { const v = this.parseNum(this.montoRef.current && this.montoRef.current.value); if (!v || v <= 0) { this.setToast('Ingresá un monto válido'); return; } this.setState(s => ({ money: s.money + v, modal: null })); this.setToast('Ingreso registrado: ' + this.fmt(v)); }
+  submitGasto() { const v = this.parseNum(this.gastoMontoRef.current && this.gastoMontoRef.current.value); if (!v || v <= 0) { this.setToast('Ingresá un monto válido'); return; } this.setState(s => ({ gastos: s.gastos + v, modal: null })); this.setToast('Gasto registrado: ' + this.fmt(v)); }
+  submitLead() {
+    const nombre = (this.leadNombreRef.current && this.leadNombreRef.current.value || '').trim() || 'Nueva lead';
+    const canal = (this.leadCanalRef.current && this.leadCanalRef.current.value) || 'instagram';
+    const m = { instagram: ['Instagram DM', '#B655C9'], whatsapp: ['WhatsApp', '#3FA56A'], referido: ['Referida', '#4A86C9'], web: ['Web', '#9A8C7A'], otro: ['Otro', '#9A8C7A'] };
+    const cfg = m[canal] || m.otro;
+    this.setState(s => ({ leads: [...s.leads, { id: 'l' + Date.now(), nombre, canal: cfg[0], dot: cfg[1], etapa: 'nuevo', dias: 0 }], modal: null }));
+    this.setToast('Lead agregada ✦');
+  }
+  submitTarea() {
+    const titulo = (this.tareaTituloRef.current && this.tareaTituloRef.current.value || '').trim();
+    if (!titulo) { this.setToast('Escribí la tarea'); return; }
+    const prioridad = (this.tareaPrioridadRef.current && this.tareaPrioridadRef.current.value) || 'media';
+    this.setState(s => ({ tasks: [...s.tasks, { id: 't' + Date.now(), titulo, contexto: '', cat: 'Operaciones', prioridad, done: false, delegable: false }], modal: null }));
+    this.setToast('Tarea agregada ✦');
+  }
+
+  renderVals() {
+    const themes = {
+      arena: { '--bg': '#F4EDE4', '--surface': '#FFFFFF', '--surface-2': '#F6EFE6', '--border': '#E7DCCF', '--text': '#2D2823', '--text-2': '#877C6E', '--text-3': '#B7AB9B', '--accent': '#BE6A4E', '--accent-soft': 'rgba(190,106,78,0.13)', '--on-accent': '#FFFFFF', '--pos': '#4F8A6B', '--pos-soft': 'rgba(79,138,107,0.13)', '--warn': '#CC9A4D', '--warn-soft': 'rgba(204,154,77,0.14)', '--danger': '#C0584F', '--danger-soft': 'rgba(192,88,79,0.12)', '--shadow': '0 1px 3px rgba(60,45,30,0.05), 0 10px 28px rgba(60,45,30,0.05)' },
+      salvia: { '--bg': '#EAEDE4', '--surface': '#FCFDFA', '--surface-2': '#E3E8DC', '--border': '#D5DCC9', '--text': '#2A312A', '--text-2': '#74806E', '--text-3': '#A7B099', '--accent': '#3F7A6B', '--accent-soft': 'rgba(63,122,107,0.13)', '--on-accent': '#FFFFFF', '--pos': '#4F8A5E', '--pos-soft': 'rgba(79,138,94,0.14)', '--warn': '#C2913F', '--warn-soft': 'rgba(194,145,63,0.15)', '--danger': '#B5564C', '--danger-soft': 'rgba(181,86,76,0.13)', '--shadow': '0 1px 3px rgba(40,50,35,0.06), 0 8px 24px rgba(40,50,35,0.06)' },
+    };
+    const s = this.state;
+    const sec = s.section;
+    const themeVars = themes[sec === 'dinero' ? 'salvia' : 'arena'];
+
+    const navStyle = (active) => ({ position: 'relative', display: 'flex', alignItems: 'center', gap: '13px', padding: '11px 13px', borderRadius: '11px', fontWeight: active ? 600 : 500, fontSize: '14px', cursor: 'pointer', background: active ? 'var(--accent-soft)' : 'transparent', color: active ? 'var(--accent)' : 'var(--text-2)', transition: 'all .15s ease' });
+
+    const doneCount = s.tasks.filter(t => t.done).length;
+    const total = s.tasks.length;
+    const pct = Math.round(doneCount / total * 100);
+    const t1done = this.isDone('t1');
+    const t2done = this.isDone('t2');
+
+    const base = [
+      { i: 0, x: 40, label: 'Lunes', ing: '$0', alc: '980', led: '1' },
+      { i: 1, x: 180, label: 'Martes', ing: '$80', alc: '1.420', led: '0' },
+      { i: 2, x: 320, label: 'Miércoles', ing: '$120', alc: '1.240', led: '3' },
+      { i: 3, x: 460, label: 'Jueves', ing: '$45', alc: '1.600', led: '2' },
+      { i: 4, x: 600, label: 'Viernes', ing: '$200', alc: '2.100', led: '1' },
+      { i: 5, x: 740, label: 'Sábado', ing: '$0', alc: '760', led: '0' },
+      { i: 6, x: 880, label: 'Domingo', ing: '$90', alc: '1.100', led: '2' },
+    ];
+    const days = base.map(d => ({ ...d, rectX: d.x - 65, enter: () => this.setState({ hover: d.i }) }));
+    const hov = s.hover == null ? null : base[s.hover];
+    const tipStyle = hov ? { position: 'absolute', left: (hov.x / 920 * 100) + '%', top: '-2px', transform: 'translate(-50%,-100%)', pointerEvents: 'none', zIndex: 5, transition: 'left .12s ease' } : { display: 'none' };
+
+    // dinero bars
+    const dvals = [0, 0, 150, 0, 80, 0, 200, 90, 0, 120, 0, 75, 0, 120];
+    const dineroBars = dvals.map((v, i) => { const h = Math.round(v / 200 * 118); return { x: 14 + i * 40, y: 130 - h, h, fill: i === dvals.length - 1 ? 'var(--text)' : 'var(--accent)' }; });
+    // audiencia bars
+    const avals = [980, 1420, 1240, 1600, 2100, 760, 1100];
+    const audBars = avals.map((v, i) => { const h = Math.round(v / 2100 * 116); return { x: 24 + i * 76, y: 130 - h, h, fill: i === 2 ? 'var(--accent)' : 'rgba(190,106,78,0.45)' }; });
+
+    // leads columns
+    const decorate = (l) => {
+      const showBadge = l.dias >= 2 && (l.etapa === 'conversacion' || l.etapa === 'propuesta');
+      return {
+        ...l,
+        diasTxt: l.dias === 0 ? 'hoy' : l.dias + (l.dias === 1 ? ' día' : ' días'),
+        advance: () => this.advanceLead(l.id),
+        cardStyle: showBadge
+          ? 'background:var(--surface,#fff);border:1px solid var(--danger,#C0584F);border-radius:11px;padding:12px 13px'
+          : 'background:var(--surface,#fff);border:1px solid var(--border,#E7DCCF);border-radius:11px;padding:12px 13px',
+        badgeStyle: showBadge
+          ? 'color:var(--danger,#C0584F);background:var(--danger-soft,rgba(192,88,79,0.12));padding:2px 7px;border-radius:999px'
+          : 'color:var(--text-3,#B7AB9B)',
+      };
+    };
+    const byEtapa = (e) => s.leads.filter(l => l.etapa === e).map(decorate);
+    const colNuevo = byEtapa('nuevo'), colConv = byEtapa('conversacion'), colProp = byEtapa('propuesta'), colAgen = byEtapa('agendada'), colConvertida = byEtapa('convertida');
+    const activasCount = s.leads.filter(l => l.etapa !== 'convertida').length;
+
+    // tasks groups
+    const catColors = { Dinero: '#4F8A5E', Audiencia: '#BE6A4E', Leads: '#4A86C9', Operaciones: '#877C6E' };
+    const decorateTask = (t) => {
+      const col = catColors[t.cat] || '#877C6E';
+      return {
+        ...t,
+        toggle: () => this.toggleTask(t.id),
+        hasContexto: !!t.contexto,
+        isDelegable: !!t.delegable && !t.done,
+        titleStyle: t.done
+          ? { fontWeight: 600, fontSize: '14.5px', color: 'var(--text-3,#B7AB9B)', textDecoration: 'line-through' }
+          : { fontWeight: 600, fontSize: '14.5px', color: 'var(--text,#2D2823)' },
+        boxStyle: t.done
+          ? { width: '22px', height: '22px', borderRadius: '7px', flexShrink: 0, cursor: 'pointer', background: 'var(--accent,#BE6A4E)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '1px' }
+          : { width: '22px', height: '22px', borderRadius: '7px', flexShrink: 0, cursor: 'pointer', border: '2px solid var(--border,#E7DCCF)', background: 'transparent', marginTop: '1px' },
+        chipStyle: 'font-size:11px;font-weight:600;padding:3px 9px;border-radius:7px;color:' + col + ';background:' + col + '1f',
+      };
+    };
+    const grp = (p) => s.tasks.filter(t => t.prioridad === p).map(decorateTask).sort((a, b) => (a.done === b.done) ? 0 : (a.done ? 1 : -1));
+    const altaTasks = grp('alta'), mediaTasks = grp('media'), bajaTasks = grp('baja');
+    const allDone = doneCount === total && total > 0;
+
+    // confetti
+    let confetti = null;
+    if (allDone) {
+      const cols = ['#BE6A4E', '#4F8A6B', '#CC9A4D', '#C0584F', '#B655C9', '#4A86C9'];
+      const pieces = Array.from({ length: 18 }, (_, i) => ({
+        left: (i * 5.4 + 3) + '%',
+        bg: cols[i % cols.length],
+        dur: (2.4 + (i % 5) * 0.35) + 's',
+        delay: ((i % 7) * 0.18) + 's',
+        w: (7 + (i % 3) * 3) + 'px',
+      }));
+      confetti = React.createElement('div', { style: { position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 45 } },
+        pieces.map((p, i) => React.createElement('div', { key: i, style: { position: 'absolute', left: p.left, top: '-24px', width: p.w, height: '13px', background: p.bg, borderRadius: '2px', opacity: 0.9, animation: 'confettiFall ' + p.dur + ' ' + p.delay + ' ease-in forwards' } })));
+    }
+
+    const modalTitles = { ingreso: 'Registrar ingreso', gasto: 'Registrar gasto', lead: 'Nueva lead', tarea: 'Agregar tarea' };
+
+    return {
+      themeVars,
+      isInicio: sec === 'inicio', isDinero: sec === 'dinero', isAudiencia: sec === 'audiencia', isLeads: sec === 'leads', isAcciones: sec === 'acciones',
+      navInicioStyle: navStyle(sec === 'inicio'), navDineroStyle: navStyle(sec === 'dinero'), navAudienciaStyle: navStyle(sec === 'audiencia'), navLeadsStyle: navStyle(sec === 'leads'), navAccionesStyle: navStyle(sec === 'acciones'),
+      goInicio: () => this.go('inicio'), goDinero: () => this.go('dinero'), goAudiencia: () => this.go('audiencia'), goLeads: () => this.go('leads'), goAcciones: () => this.go('acciones'),
+
+      moneyHoy: this.fmt(s.money),
+      gastosFmt: this.fmt(s.gastos),
+      resultadoFmt: (s.money - s.gastos >= 0 ? '+' : '−') + this.fmt(Math.abs(s.money - s.gastos)),
+
+      tareasLabel: doneCount + '/' + total,
+      tareasBarStyle: { width: pct + '%', height: '100%', borderRadius: '999px', background: 'var(--accent)', transition: 'width .4s ease' },
+      doneCount, totalTasks: total, pctLabel: pct + '%',
+      accPctStyle: { width: pct + '%', height: '100%', borderRadius: '999px', background: 'var(--accent)', transition: 'width .4s ease' },
+
+      a0Active: !t2done, a0Done: t2done, a0Expanded: s.expandedA0 && !t2done, a0Collapsed: !s.expandedA0 && !t2done,
+      a1Active: !t1done, a1Done: t1done, a1Expanded: s.expandedA1 && !t1done, a1Collapsed: !s.expandedA1 && !t1done,
+      expandA0: () => this.setState(st => ({ expandedA0: !st.expandedA0 })),
+      expandA1: () => this.setState(st => ({ expandedA1: !st.expandedA1 })),
+      doneA0: () => { this.markTask('t2', true); this.setToast('¡Tarea completada! ✦'); },
+      doneA1: () => { this.markTask('t1', true); this.setToast('¡Tarea completada! ✦'); },
+      delegar: () => this.delegar(),
+
+      sIng: s.sIng, sAlc: s.sAlc, sLed: s.sLed, ingOff: !s.sIng, alcOff: !s.sAlc, ledOff: !s.sLed,
+      toggleIng: () => this.setState(st => ({ sIng: !st.sIng })), toggleAlc: () => this.setState(st => ({ sAlc: !st.sAlc })), toggleLed: () => this.setState(st => ({ sLed: !st.sLed })),
+      days, clearHover: () => this.setState({ hover: null }), hoverActive: s.hover != null, hoveredDay: hov, tipStyle,
+
+      dineroBars, audBars,
+
+      colNuevo, colConv, colProp, colAgen, colConvertida,
+      countNuevo: colNuevo.length, countConv: colConv.length, countProp: colProp.length, countAgen: colAgen.length, countConvertida: colConvertida.length,
+      activasCount,
+
+      altaTasks, mediaTasks, bajaTasks, allDone, confetti,
+
+      modalOpen: !!s.modal, modalTitle: modalTitles[s.modal] || '',
+      isModalIngreso: s.modal === 'ingreso', isModalGasto: s.modal === 'gasto', isModalLead: s.modal === 'lead', isModalTarea: s.modal === 'tarea',
+      openIngreso: () => this.setState({ modal: 'ingreso' }), openGasto: () => this.setState({ modal: 'gasto' }), openLead: () => this.setState({ modal: 'lead' }), openTarea: () => this.setState({ modal: 'tarea' }),
+      closeModal: () => this.setState({ modal: null }), stop: (e) => e.stopPropagation(),
+      submitIngreso: () => this.submitIngreso(), submitGasto: () => this.submitGasto(), submitLead: () => this.submitLead(), submitTarea: () => this.submitTarea(),
+      montoRef: this.montoRef, fuenteRef: this.fuenteRef, metodoRef: this.metodoRef, gastoMontoRef: this.gastoMontoRef, gastoCatRef: this.gastoCatRef, leadNombreRef: this.leadNombreRef, leadCanalRef: this.leadCanalRef, tareaTituloRef: this.tareaTituloRef, tareaPrioridadRef: this.tareaPrioridadRef,
+
+      sincronizar: () => this.setToast('Sincronizando con Instagram… ✦'),
+      toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>
