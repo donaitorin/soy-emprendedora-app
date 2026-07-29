@@ -18,7 +18,7 @@ export default function EntryPage() {
           return;
         }
         const status = await api.get<MetaStatus>(`/meta/status?account_id=${accountId}`);
-        router.replace(status.connected ? "/dashboard" : "/connect-meta");
+        router.replace(status.connected ? "/dashboard/home" : "/connect-meta");
       } catch {
         // Un 401 ya redirige a /login desde lib/api.ts
       }

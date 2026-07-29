@@ -37,7 +37,7 @@ function CallbackContent() {
           setData(body);
           setStatus("select");
         } else {
-          router.replace("/dashboard");
+          router.replace("/dashboard/home");
         }
       })
       .catch((err) => {
@@ -51,7 +51,7 @@ function CallbackContent() {
     setSelecting(true);
     try {
       await api.post("/meta/select-page", { account_id: data.account_id, fb_page_id: fbPageId });
-      router.replace("/dashboard");
+      router.replace("/dashboard/home");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "No se pudo seleccionar la página");
       setSelecting(false);
