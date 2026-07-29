@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { clearToken } from "@/lib/auth";
-import type { User } from "@/lib/types";
+import type { MetaStatus, User } from "@/lib/types";
 
 function HomeIcon({ className }: { className?: string }) {
   return (
@@ -77,12 +77,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
   const [businessName, setBusinessName] = useState<string | null>(null);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
+  const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
-    api
-      .get<User>("/auth/me")
-      .then((me) => setBusinessName(me.accounts[0]?.name ?? null))
-      .catch(() => {});
+    async function loadBusiness() {
+      try {
+        const me = await api.get<User>("/auth/me");
+        const account = me.accounts[0];
+        if (!account) return;
+
+        const status = await api.get<MetaStatus>(`/meta/status?account_id=${account.id}`);
+        const metaName = status.page_name ?? (status.ig_username ? `@${status.ig_username}` : null);
+        setBusinessName(metaName ?? account.name);
+        setProfilePictureUrl(status.profile_picture_url);
+      } catch {
+        // el nombre queda en "Cargando…" si esto falla
+      }
+    }
+    loadBusiness();
   }, []);
 
   function handleLogout() {
@@ -94,10 +107,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen bg-background">
-      <aside className="sticky top-0 flex h-screen w-[248px] flex-shrink-0 flex-col gap-1 border-r border-border bg-surface px-5 py-6">
+      <aside className="sticky top-0 flex h-screen w-62 shrink-0 flex-col gap-1 border-r border-border bg-surface px-5 py-6">
         <div className="flex items-center gap-3 px-1 pb-6">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[11px] bg-accent font-serif text-lg font-bold text-on-accent">
-            {initial}
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[11px] bg-accent font-serif text-lg font-bold text-on-accent">
+            {profilePictureUrl && !imageFailed ? (
+              // eslint-disable-next-line @next/next/no-img-element -- viene de un CDN externo de Meta con subdominios dinámicos, no vale la pena optimizarla con next/image
+              <img
+                src={profilePictureUrl}
+                alt={businessName ?? "Negocio"}
+                className="h-full w-full object-cover"
+                onError={() => setImageFailed(true)}
+              />
+            ) : (
+              initial
+            )}
           </div>
           <div className="min-w-0 leading-tight">
             <div className="truncate font-serif text-base font-semibold text-primary">
@@ -118,9 +141,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 }`}
               >
                 {isActive && (
-                  <span className="absolute bottom-[9px] left-0 top-[9px] w-[3px] rounded-full bg-accent" />
+                  <span className="absolute bottom-2.25 left-0 top-2.25 w-0.75 rounded-full bg-accent" />
                 )}
-                <item.icon className="h-[19px] w-[19px] flex-shrink-0" />
+                <item.icon className="h-4.75 w-4.75 shrink-0" />
                 {item.label}
               </Link>
             );
@@ -132,13 +155,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           onClick={handleLogout}
           className="mt-auto flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-sm font-semibold text-secondary transition-colors hover:border-accent hover:text-accent"
         >
-          <LogoutIcon className="h-[18px] w-[18px]" />
+          <LogoutIcon className="h-4.5 w-4.5" />
           Cerrar sesión
         </button>
       </aside>
 
       <main className="min-w-0 flex-1 px-10 py-8">
-        <div className="mx-auto w-full max-w-[1320px]">{children}</div>
+        <div className="mx-auto w-full max-w-330">{children}</div>
       </main>
     </div>
   );

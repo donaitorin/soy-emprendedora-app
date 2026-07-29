@@ -22,6 +22,7 @@ export type MetaStatus = {
   ig_business_id: string | null;
   page_name: string | null;
   ig_username: string | null;
+  profile_picture_url: string | null;
   token_expires_at: string | null;
   is_primary: boolean | null;
 };
