@@ -83,13 +83,13 @@ export default function DashboardMoneyPage() {
   function handleIncomeCreated(income: Income) {
     setIncomes((prev) => (prev ? [income, ...prev] : [income]));
     setModal(null);
-    showToast(`Ingreso registrado: ${formatMoney(income.amount)}`);
+    showToast(`Ingreso registrado: ${formatMoney(Number(income.amount))}`);
   }
 
   function handleExpenseCreated(expense: Expense) {
     setExpenses((prev) => (prev ? [expense, ...prev] : [expense]));
     setModal(null);
-    showToast(`Gasto registrado: ${formatMoney(expense.amount)}`);
+    showToast(`Gasto registrado: ${formatMoney(Number(expense.amount))}`);
   }
 
   if (loadError) {

@@ -39,8 +39,27 @@ export function monthsAgoStart(date: Date, monthsBack: number): Date {
   return new Date(date.getFullYear(), date.getMonth() - monthsBack, 1);
 }
 
+// El backend serializa `amount` como string (ej. "800.00") en vez de number —
+// confirmado contra la API real, aunque el contrato documentado en
+// frontend-integration.md lo muestra como number. Coercionamos acá para no romper
+// las sumas mientras eso se corrige del lado del backend.
+function coerceAmount(item: { amount: number }): number {
+  const raw = item.amount as unknown;
+  if (typeof raw === "number" && !Number.isNaN(raw)) {
+    return raw;
+  }
+
+  const parsed = typeof raw === "string" ? Number(raw) : NaN;
+  if (Number.isNaN(parsed)) {
+    console.error("[money] item con amount inválido, se ignora en los totales:", item);
+    return 0;
+  }
+
+  return parsed;
+}
+
 function sumAmount(items: { amount: number }[]): number {
-  return items.reduce((total, item) => total + item.amount, 0);
+  return items.reduce((total, item) => total + coerceAmount(item), 0);
 }
 
 export function sumByDate<T extends { occurred_on: string; amount: number }>(
@@ -76,7 +95,7 @@ export function incomeBySource(
 
   const bySource = new Map<IncomeSource, number>();
   for (const income of thisMonth) {
-    bySource.set(income.source, (bySource.get(income.source) ?? 0) + income.amount);
+    bySource.set(income.source, (bySource.get(income.source) ?? 0) + coerceAmount(income));
   }
 
   return INCOME_SOURCES.map(({ value, label }) => {
