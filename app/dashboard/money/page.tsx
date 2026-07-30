@@ -11,11 +11,12 @@ import {
   toIsoDate,
   todayTotals,
 } from "@/lib/money";
-import type { Expense, Income, User } from "@/lib/types";
+import type { Expense, Income, Movement, User } from "@/lib/types";
 import ExpenseModal from "./_components/expense-modal";
 import HistoryChart from "./_components/history-chart";
 import IncomeModal from "./_components/income-modal";
 import MonthlyIncomeChart from "./_components/monthly-income-chart";
+import MovementsTable from "./_components/movements-table";
 import SourceBreakdown from "./_components/source-breakdown";
 
 type ModalKind = "income" | "expense" | null;
@@ -90,6 +91,15 @@ export default function DashboardMoneyPage() {
     setExpenses((prev) => (prev ? [expense, ...prev] : [expense]));
     setModal(null);
     showToast(`Gasto registrado: ${formatMoney(Number(expense.amount))}`);
+  }
+
+  function handleMovementDeleted(movement: Movement) {
+    if (movement.type === "income") {
+      setIncomes((prev) => (prev ? prev.filter((income) => income.id !== movement.id) : prev));
+    } else {
+      setExpenses((prev) => (prev ? prev.filter((expense) => expense.id !== movement.id) : prev));
+    }
+    showToast("Movimiento borrado");
   }
 
   if (loadError) {
@@ -174,6 +184,13 @@ export default function DashboardMoneyPage() {
         <div className="h-40">
           <HistoryChart data={history} />
         </div>
+      </section>
+
+      <section className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <h2 className="mb-4 font-serif text-lg font-semibold text-primary">
+          Todos los movimientos
+        </h2>
+        <MovementsTable accountId={accountId} onMovementDeleted={handleMovementDeleted} />
       </section>
 
       {modal === "income" && (

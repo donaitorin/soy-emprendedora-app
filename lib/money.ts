@@ -1,4 +1,11 @@
-import type { Expense, ExpenseCategory, Income, IncomeSource, PaymentMethod } from "./types";
+import type {
+  Expense,
+  ExpenseCategory,
+  Income,
+  IncomeSource,
+  Movement,
+  PaymentMethod,
+} from "./types";
 
 export const INCOME_SOURCES: { value: IncomeSource; label: string }[] = [
   { value: "mentoria", label: "Mentoría 1:1" },
@@ -26,6 +33,32 @@ export const EXPENSE_CATEGORIES: { value: ExpenseCategory; label: string }[] = [
 
 export function formatMoney(amount: number): string {
   return `$${Math.round(amount).toLocaleString("es-AR")}`;
+}
+
+const INCOME_SOURCE_LABELS = Object.fromEntries(
+  INCOME_SOURCES.map((s) => [s.value, s.label])
+) as Record<IncomeSource, string>;
+
+const PAYMENT_METHOD_LABELS = Object.fromEntries(
+  PAYMENT_METHODS.map((s) => [s.value, s.label])
+) as Record<PaymentMethod, string>;
+
+const EXPENSE_CATEGORY_LABELS = Object.fromEntries(
+  EXPENSE_CATEGORIES.map((s) => [s.value, s.label])
+) as Record<ExpenseCategory, string>;
+
+export function movementDetailLabel(movement: Movement): string {
+  if (movement.type === "income" && movement.source) {
+    const sourceLabel = INCOME_SOURCE_LABELS[movement.source];
+    const paymentLabel = movement.payment_method
+      ? PAYMENT_METHOD_LABELS[movement.payment_method]
+      : null;
+    return paymentLabel ? `${sourceLabel} · ${paymentLabel}` : sourceLabel;
+  }
+  if (movement.type === "expense" && movement.category) {
+    return EXPENSE_CATEGORY_LABELS[movement.category];
+  }
+  return "—";
 }
 
 export function toIsoDate(date: Date): string {

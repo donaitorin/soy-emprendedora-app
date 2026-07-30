@@ -72,3 +72,25 @@ export type Expense = {
   category: ExpenseCategory;
   created_at: string;
 };
+
+export type MovementType = "income" | "expense";
+
+export type Movement = {
+  id: string;
+  account_id: string;
+  type: MovementType;
+  amount: number;
+  occurred_on: string;
+  created_at: string;
+  source: IncomeSource | null;
+  payment_method: PaymentMethod | null;
+  category: ExpenseCategory | null;
+};
+
+export type MovementsPage = {
+  items: Movement[];
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+};

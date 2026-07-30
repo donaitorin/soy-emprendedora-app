@@ -304,10 +304,45 @@ mismos filtros `from`/`to` opcionales.
 
 Response `200`: `list` del mismo shape que la respuesta de `POST /expenses`.
 
-**Fuera de alcance todavía**: edición/borrado de movimientos ya cargados, endpoints de
-agregados (total del día/mes, breakdown por fuente o categoría, histórico), y la "meta
-del mes" (objetivo mensual configurable) — todo eso queda para un pedido posterior sobre
-este mismo modelo.
+#### `GET /accounts/{account_id}/movements?page=&page_size=&from=&to=&type=`
+Vista combinada de ingresos y gastos, paginada — pensada para una tabla mixta (no
+reemplaza `/incomes` ni `/expenses`, que siguen sin paginar para tarjetas/gráficos).
+
+Query params, todos opcionales: `page` (default `1`), `page_size` (default `20`, máximo
+`100`), `from`/`to` (fecha, filtran por `occurred_on`), `type` (`"income"` | `"expense"`,
+para filtrar por tipo si hace falta).
+
+Response `200`:
+```json
+{
+  "items": [
+    { "id": "uuid", "account_id": "uuid", "type": "income", "amount": 800.0, "occurred_on": "2026-07-29", "created_at": "2026-07-29T10:00:00Z", "source": "mentoria", "payment_method": "transferencia", "category": null },
+    { "id": "uuid", "account_id": "uuid", "type": "expense", "amount": 500.0, "occurred_on": "2026-07-29", "created_at": "2026-07-29T09:00:00Z", "source": null, "payment_method": null, "category": "servicios" }
+  ],
+  "page": 1,
+  "page_size": 20,
+  "total": 57,
+  "total_pages": 3
+}
+```
+Cada item trae **todos** los campos de ambos tipos, con `null` en los que no aplican
+según `type` — mismo criterio que `MetaConnectionStatus`. Orden: más reciente primero
+por `occurred_on`, `created_at` como desempate. `total_pages` es `0` si `total` es `0`.
+
+Esta es la primera ruta paginada de la API (antes no había ninguna — ver
+"Limitaciones conocidas" más abajo, que ya no aplica a este endpoint puntual).
+
+#### `DELETE /accounts/{account_id}/movements/{movement_id}`
+Borra (soft-delete) un ingreso o gasto ya cargado. Un movimiento borrado deja de
+aparecer en este endpoint, en `/incomes` y en `/expenses` — no se puede deshacer todavía.
+
+Response `204` sin contenido. Errores: `404` si `movement_id` no existe en ese negocio
+o si ya estaba borrado.
+
+**Fuera de alcance todavía**: edición de movimientos existentes, restaurar un borrado,
+exportar (CSV, etc.), endpoints de agregados (total del día/mes, breakdown por fuente o
+categoría, histórico), y la "meta del mes" (objetivo mensual configurable) — todo eso
+queda para un pedido posterior sobre este mismo modelo.
 
 ### Admin (solo `role: "admin"` de plataforma — ocultar toda esta sección si `role !== "admin"`)
 
@@ -369,6 +404,7 @@ frontend (splash screen, banner de "backend caído").
 - Fuente de ingreso (`IncomeRead.source`): `"mentoria"`, `"comunidad"`, `"claridad"`, `"producto"`, `"otro"`
 - Método de pago (`IncomeRead.payment_method`): `"transferencia"`, `"stripe"`, `"mercadopago"`, `"paypal"`, `"efectivo"`
 - Categoría de gasto (`ExpenseRead.category`): `"herramientas"`, `"publicidad"`, `"educacion"`, `"servicios"`, `"otro"`
+- Tipo de movimiento (`MovementRead.type`, filtro `type` de `/movements`): `"income"`, `"expense"`
 
 ## Limitaciones conocidas a tener en cuenta en el diseño del frontend
 
@@ -386,9 +422,10 @@ frontend (splash screen, banner de "backend caído").
   termine en una URL del frontend después del OAuth, hay que coordinarlo con el equipo de
   backend (cambiar `META_REDIRECT_URI` a una ruta del frontend que llame a este endpoint
   vía fetch, en vez de que Meta pegue directo al backend).
-- **Sin paginación**: `GET /admin/users`, `GET /admin/accounts`, listas de miembros, etc.
-  devuelven todo sin paginar — con pocos datos hoy no importa, pero no asumir que
-  seguirá así indefinidamente.
+- **Paginación solo en `/movements`**: es la única ruta paginada de la API (convención
+  `page`/`page_size`, ver esa sección). `GET /admin/users`, `GET /admin/accounts`,
+  `/incomes`, `/expenses`, listas de miembros, etc. siguen devolviendo todo sin paginar
+  — con pocos datos hoy no importa, pero no asumir que seguirá así indefinidamente.
 - **Sin rate limiting ni CSRF** implementados todavía a nivel de API.
 
 ## Ver también
