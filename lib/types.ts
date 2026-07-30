@@ -47,3 +47,28 @@ export type DashboardInsights = {
   impressions: number | null;
   reach: number | null;
 };
+
+export type IncomeSource = "mentoria" | "comunidad" | "claridad" | "producto" | "otro";
+
+export type PaymentMethod = "transferencia" | "stripe" | "mercadopago" | "paypal" | "efectivo";
+
+export type ExpenseCategory = "herramientas" | "publicidad" | "educacion" | "servicios" | "otro";
+
+export type Income = {
+  id: string;
+  account_id: string;
+  amount: number;
+  occurred_on: string;
+  source: IncomeSource;
+  payment_method: PaymentMethod;
+  created_at: string;
+};
+
+export type Expense = {
+  id: string;
+  account_id: string;
+  amount: number;
+  occurred_on: string;
+  category: ExpenseCategory;
+  created_at: string;
+};
