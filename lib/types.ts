@@ -94,3 +94,37 @@ export type MovementsPage = {
   total: number;
   total_pages: number;
 };
+
+export type LeadChannel = "instagram" | "whatsapp" | "referido" | "web" | "otro";
+
+export type LeadStage = "nuevo" | "conversacion" | "propuesta" | "agendada" | "convertida";
+
+export type LeadArchiveReason = "converted" | "not_converted";
+
+export type Lead = {
+  id: string;
+  account_id: string;
+  name: string;
+  channel: LeadChannel;
+  stage: LeadStage;
+  stage_changed_at: string;
+  converted_at: string | null;
+  archived: boolean;
+  archive_reason: LeadArchiveReason | null;
+  archived_at: string | null;
+  created_at: string;
+};
+
+export type LeadsPage = {
+  items: Lead[];
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+};
+
+export type LeadStats = {
+  active_count: number;
+  conversion_rate: number | null;
+  avg_conversion_days: number | null;
+};

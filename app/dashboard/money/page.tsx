@@ -12,6 +12,7 @@ import {
   todayTotals,
 } from "@/lib/money";
 import type { Expense, Income, Movement, User } from "@/lib/types";
+import { PlusIcon } from "../_components/icons";
 import ExpenseModal from "./_components/expense-modal";
 import HistoryChart from "./_components/history-chart";
 import IncomeModal from "./_components/income-modal";
@@ -20,22 +21,6 @@ import MovementsTable from "./_components/movements-table";
 import SourceBreakdown from "./_components/source-breakdown";
 
 type ModalKind = "income" | "expense" | null;
-
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M5 12h14M12 5v14" />
-    </svg>
-  );
-}
 
 export default function DashboardMoneyPage() {
   const [accountId, setAccountId] = useState<string | null>(null);

@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import ConfirmModal from "@/app/dashboard/_components/confirm-modal";
 import { api, ApiError } from "@/lib/api";
-import { formatMoney, movementDetailLabel } from "@/lib/money";
-import type { Movement, MovementsPage } from "@/lib/types";
+import { leadChannelLabel, leadStageLabel } from "@/lib/leads";
+import type { Lead, LeadsPage } from "@/lib/types";
 
 const PAGE_SIZE = 10;
 
@@ -28,17 +28,24 @@ function TrashIcon({ className }: { className?: string }) {
   );
 }
 
-export default function MovementsTable({
+function statusLabel(lead: Lead): string {
+  if (!lead.archived) return leadStageLabel(lead.stage);
+  return lead.archive_reason === "converted" ? "Archivada · Convertida" : "Archivada · No convertida";
+}
+
+export default function LeadsTable({
   accountId,
-  onMovementDeleted,
+  refreshKey,
+  onLeadDeleted,
 }: {
   accountId: string;
-  onMovementDeleted: (movement: Movement) => void;
+  refreshKey?: number;
+  onLeadDeleted?: (lead: Lead) => void;
 }) {
   const [page, setPage] = useState(1);
-  const [data, setData] = useState<MovementsPage | null>(null);
+  const [data, setData] = useState<LeadsPage | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<Movement | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Lead | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,15 +54,13 @@ export default function MovementsTable({
     async function load() {
       setError(null);
       try {
-        const result = await api.get<MovementsPage>(
-          `/accounts/${accountId}/movements?page=${page}&page_size=${PAGE_SIZE}`
+        const result = await api.get<LeadsPage>(
+          `/accounts/${accountId}/leads?page=${page}&page_size=${PAGE_SIZE}`
         );
         if (!cancelled) setData(result);
       } catch (err) {
         if (!cancelled) {
-          setError(
-            err instanceof ApiError ? err.message : "No se pudieron cargar los movimientos"
-          );
+          setError(err instanceof ApiError ? err.message : "No se pudieron cargar las leads");
         }
       }
     }
@@ -64,15 +69,15 @@ export default function MovementsTable({
     return () => {
       cancelled = true;
     };
-  }, [accountId, page]);
+  }, [accountId, page, refreshKey]);
 
-  async function handleDelete(movement: Movement) {
+  async function handleDelete(lead: Lead) {
     const wasLastOnPage = data?.items.length === 1;
-    setDeletingId(movement.id);
+    setDeletingId(lead.id);
     try {
-      await api.delete(`/accounts/${accountId}/movements/${movement.id}`);
+      await api.delete(`/accounts/${accountId}/leads/${lead.id}`);
       setPendingDelete(null);
-      onMovementDeleted(movement);
+      onLeadDeleted?.(lead);
 
       if (wasLastOnPage && page > 1) {
         setPage((p) => p - 1);
@@ -81,14 +86,14 @@ export default function MovementsTable({
           prev
             ? {
                 ...prev,
-                items: prev.items.filter((item) => item.id !== movement.id),
+                items: prev.items.filter((item) => item.id !== lead.id),
                 total: Math.max(0, prev.total - 1),
               }
             : prev
         );
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "No se pudo borrar el movimiento");
+      setError(err instanceof ApiError ? err.message : "No se pudo borrar la lead");
     } finally {
       setDeletingId(null);
     }
@@ -99,7 +104,7 @@ export default function MovementsTable({
   }
 
   if (!data) {
-    return <p className="text-sm text-secondary">Cargando movimientos…</p>;
+    return <p className="text-sm text-secondary">Cargando leads…</p>;
   }
 
   return (
@@ -109,9 +114,9 @@ export default function MovementsTable({
           <thead>
             <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-tertiary">
               <th className="py-2.5 pr-4 font-semibold">Fecha</th>
-              <th className="py-2.5 pr-4 font-semibold">Tipo</th>
-              <th className="py-2.5 pr-4 font-semibold">Detalle</th>
-              <th className="py-2.5 pr-4 font-semibold">Monto</th>
+              <th className="py-2.5 pr-4 font-semibold">Nombre</th>
+              <th className="py-2.5 pr-4 font-semibold">Canal</th>
+              <th className="py-2.5 pr-4 font-semibold">Estado</th>
               <th className="py-2.5 pr-4 font-semibold">Acciones</th>
             </tr>
           </thead>
@@ -119,33 +124,33 @@ export default function MovementsTable({
             {data.items.length === 0 && (
               <tr>
                 <td colSpan={5} className="py-6 text-center text-secondary">
-                  Todavía no hay movimientos registrados.
+                  Todavía no hay leads registradas.
                 </td>
               </tr>
             )}
-            {data.items.map((movement) => (
-              <tr key={movement.id} className="border-b border-border last:border-0">
-                <td className="py-3 pr-4 text-primary">{movement.occurred_on}</td>
+            {data.items.map((lead) => (
+              <tr key={lead.id} className="border-b border-border last:border-0">
+                <td className="py-3 pr-4 text-primary">{lead.created_at.slice(0, 10)}</td>
+                <td className="py-3 pr-4 font-semibold text-primary">{lead.name}</td>
+                <td className="py-3 pr-4 text-secondary">{leadChannelLabel(lead.channel)}</td>
                 <td className="py-3 pr-4">
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      movement.type === "income"
-                        ? "bg-success-soft text-success"
-                        : "bg-danger-soft text-danger"
+                      lead.archived
+                        ? lead.archive_reason === "converted"
+                          ? "bg-success-soft text-success"
+                          : "bg-danger-soft text-danger"
+                        : "bg-surface-2 text-secondary"
                     }`}
                   >
-                    {movement.type === "income" ? "Ingreso" : "Gasto"}
+                    {statusLabel(lead)}
                   </span>
-                </td>
-                <td className="py-3 pr-4 text-secondary">{movementDetailLabel(movement)}</td>
-                <td className="py-3 pr-4 font-semibold text-primary">
-                  {formatMoney(Number(movement.amount))}
                 </td>
                 <td className="py-3 pr-4">
                   <button
                     type="button"
-                    onClick={() => setPendingDelete(movement)}
-                    aria-label="Borrar movimiento"
+                    onClick={() => setPendingDelete(lead)}
+                    aria-label="Borrar lead"
                     className="flex h-8 w-8 items-center justify-center rounded-lg text-secondary hover:bg-surface-2 hover:text-danger"
                   >
                     <TrashIcon className="h-4 w-4" />
@@ -160,7 +165,7 @@ export default function MovementsTable({
       {data.total_pages > 1 && (
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-secondary">
           <span>
-            Página {data.page} de {data.total_pages} · {data.total} movimientos
+            Página {data.page} de {data.total_pages} · {data.total} leads
           </span>
           <div className="flex gap-2">
             <button
@@ -185,10 +190,8 @@ export default function MovementsTable({
 
       {pendingDelete && (
         <ConfirmModal
-          title="Borrar movimiento"
-          message={`¿Seguro que querés borrar este ${
-            pendingDelete.type === "income" ? "ingreso" : "gasto"
-          } de ${formatMoney(Number(pendingDelete.amount))}? Esta acción no se puede deshacer.`}
+          title="Borrar lead"
+          message={`¿Seguro que querés borrar a ${pendingDelete.name}? Esta acción no se puede deshacer.`}
           confirmLabel="Borrar"
           loading={deletingId === pendingDelete.id}
           onConfirm={() => handleDelete(pendingDelete)}

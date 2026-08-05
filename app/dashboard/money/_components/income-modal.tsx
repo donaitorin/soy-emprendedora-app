@@ -4,7 +4,7 @@ import { type FormEvent, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { INCOME_SOURCES, PAYMENT_METHODS, toIsoDate } from "@/lib/money";
 import type { Income, IncomeSource, PaymentMethod } from "@/lib/types";
-import Modal from "./modal";
+import Modal from "@/app/dashboard/_components/modal";
 
 export default function IncomeModal({
   accountId,

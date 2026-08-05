@@ -4,7 +4,7 @@ import { type FormEvent, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { EXPENSE_CATEGORIES, toIsoDate } from "@/lib/money";
 import type { Expense, ExpenseCategory } from "@/lib/types";
-import Modal from "./modal";
+import Modal from "@/app/dashboard/_components/modal";
 
 export default function ExpenseModal({
   accountId,
