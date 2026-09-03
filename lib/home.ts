@@ -1,6 +1,5 @@
-// "Tareas" y "Alcance" todavía no tienen una fuente de datos real definida — placeholders
-// visuales a propósito hasta que se defina cómo van a funcionar.
-export const HARDCODED_TASKS = { done: 1, total: 3 };
+// "Alcance" todavía no tiene una fuente de datos real definida — placeholder visual a
+// propósito hasta que se defina cómo va a funcionar.
 export const HARDCODED_REACH_TODAY = 1240;
 export const HARDCODED_WEEKLY_REACH = [980, 1420, 1240, 1600, 2100, 760, 1100];
 

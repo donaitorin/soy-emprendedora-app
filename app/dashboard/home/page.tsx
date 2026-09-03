@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import IncomeModal from "@/app/dashboard/money/_components/income-modal";
+import TaskModal from "@/app/dashboard/_components/task-modal";
 import { api, ApiError } from "@/lib/api";
 import {
   HARDCODED_REACH_TODAY,
-  HARDCODED_TASKS,
   HARDCODED_WEEKLY_REACH,
   greeting,
+  hoursLabel,
   lastNDays,
   weekdayLong,
 } from "@/lib/home";
@@ -19,12 +20,23 @@ import type {
   LeadsPage,
   LeadStats,
   PostingStatus,
+  Task,
+  TaskPriority,
+  TaskSuggestionType,
   UnansweredConversation,
   User,
 } from "@/lib/types";
 import AttentionSection from "./_components/attention-section";
 import FocusLeads from "./_components/focus-leads";
 import WeeklyChart, { type WeeklyRow } from "./_components/weekly-chart";
+
+type TaskPrefill = {
+  title: string;
+  notes: string;
+  priority: TaskPriority;
+  suggestionType: TaskSuggestionType;
+  conversationRef: string | null;
+};
 
 export default function DashboardHomePage() {
   const [accountId, setAccountId] = useState<string | null>(null);
@@ -37,8 +49,10 @@ export default function DashboardHomePage() {
   // null = todavía no sabemos (sigue cargando) — distinto de "ya revisamos y no hay nada".
   const [unanswered, setUnanswered] = useState<UnansweredConversation[] | null>(null);
   const [unansweredError, setUnansweredError] = useState(false);
+  const [tasks, setTasks] = useState<Task[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showIncomeModal, setShowIncomeModal] = useState(false);
+  const [taskPrefill, setTaskPrefill] = useState<TaskPrefill | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,13 +71,14 @@ export default function DashboardHomePage() {
         const weekStart = toIsoDate(lastNDays(now, 7)[0]);
         const today = toIsoDate(now);
 
-        const [incomes, stats, board, weekLeads] = await Promise.all([
+        const [incomes, stats, board, weekLeads, todaysTasks] = await Promise.all([
           api.get<Income[]>(`/accounts/${account.id}/incomes?from=${weekStart}&to=${today}`),
           api.get<LeadStats>(`/accounts/${account.id}/leads/stats`),
           api.get<Lead[]>(`/accounts/${account.id}/leads/board`),
           api.get<LeadsPage>(
             `/accounts/${account.id}/leads?created_from=${weekStart}&created_to=${today}&page_size=100`
           ),
+          api.get<Task[]>(`/accounts/${account.id}/tasks?date=${today}`),
         ]);
 
         if (cancelled) return;
@@ -73,6 +88,7 @@ export default function DashboardHomePage() {
         setLeadStats(stats);
         setLeadsBoard(board);
         setLeadsWeek(weekLeads.items);
+        setTasks(todaysTasks);
 
         // "Atención hoy" depende de la Graph API de Meta — no bloqueamos el resto de la
         // pantalla si esto falla o no hay conexión activa. `unanswered-conversations` en
@@ -124,11 +140,43 @@ export default function DashboardHomePage() {
     showToast(`Ingreso registrado: ${formatMoney(Number(income.amount))}`);
   }
 
+  function handleTaskCreated(task: Task) {
+    setTasks((prev) => (prev ? [task, ...prev] : [task]));
+    setTaskPrefill(null);
+    showToast("Tarea agregada");
+  }
+
+  function handleCreatePostingTask() {
+    if (!postingStatus) return;
+    setTaskPrefill({
+      title: "Publicar contenido hoy",
+      notes:
+        postingStatus.days_since_last_post === null
+          ? "Todavía no publicaste contenido en tu Instagram conectado."
+          : `Llevás ${postingStatus.days_since_last_post} ${
+              postingStatus.days_since_last_post === 1 ? "día" : "días"
+            } sin publicar`,
+      priority: "alta",
+      suggestionType: "posting_reminder",
+      conversationRef: null,
+    });
+  }
+
+  function handleCreateConversationTask(conversation: UnansweredConversation) {
+    setTaskPrefill({
+      title: `Responder a ${conversation.contact_name}`,
+      notes: `Lleva ${hoursLabel(conversation.hours_since_last_message)} sin seguimiento`,
+      priority: "alta",
+      suggestionType: "unanswered_conversation",
+      conversationRef: conversation.conversation_id,
+    });
+  }
+
   if (loadError) {
     return <p className="text-sm text-danger">{loadError}</p>;
   }
 
-  if (!accountId || !incomesWeek || !leadStats || !leadsBoard || !leadsWeek) {
+  if (!accountId || !incomesWeek || !leadStats || !leadsBoard || !leadsWeek || !tasks) {
     return <p className="text-sm text-secondary">Cargando…</p>;
   }
 
@@ -136,7 +184,17 @@ export default function DashboardHomePage() {
   const today = toIsoDate(now);
   const todayIncome = sumByDate(incomesWeek, today);
   const focusLeads = selectFocusLeads(leadsBoard, now, 3);
-  const tasksPct = Math.round((HARDCODED_TASKS.done / HARDCODED_TASKS.total) * 100);
+
+  const doneTasks = tasks.filter((t) => t.done).length;
+  const totalTasks = tasks.length;
+  const pendingTasks = totalTasks - doneTasks;
+  const tasksPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+  const hasPostingTaskToday = tasks.some((t) => t.suggestion_type === "posting_reminder");
+  const respondedConversationRefs = new Set(
+    tasks
+      .filter((t) => t.suggestion_type === "unanswered_conversation" && t.conversation_ref)
+      .map((t) => t.conversation_ref as string)
+  );
 
   const weeklyRows: WeeklyRow[] = lastNDays(now, 7).map((date, index) => {
     const iso = toIsoDate(date);
@@ -198,8 +256,9 @@ export default function DashboardHomePage() {
           <div className="text-xs font-semibold uppercase tracking-wide text-tertiary">
             Tareas de hoy
           </div>
-          <div className="mt-2 text-2xl font-black text-primary">
-            {HARDCODED_TASKS.done}/{HARDCODED_TASKS.total}
+          <div className="mt-2 text-2xl font-black text-primary">{pendingTasks}</div>
+          <div className="text-xs text-secondary">
+            {totalTasks === 0 ? "sin tareas todavía" : `pendientes de ${totalTasks}`}
           </div>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
             <div className="h-full rounded-full bg-accent" style={{ width: `${tasksPct}%` }} />
@@ -212,6 +271,10 @@ export default function DashboardHomePage() {
           postingStatus={postingStatus}
           unanswered={unanswered}
           unansweredError={unansweredError}
+          hasPostingTaskToday={hasPostingTaskToday}
+          respondedConversationRefs={respondedConversationRefs}
+          onCreatePostingTask={handleCreatePostingTask}
+          onCreateConversationTask={handleCreateConversationTask}
         />
         <FocusLeads leads={focusLeads} now={now} />
       </section>
@@ -226,6 +289,19 @@ export default function DashboardHomePage() {
           accountId={accountId}
           onClose={() => setShowIncomeModal(false)}
           onCreated={handleIncomeCreated}
+        />
+      )}
+
+      {taskPrefill && (
+        <TaskModal
+          accountId={accountId}
+          initialTitle={taskPrefill.title}
+          initialNotes={taskPrefill.notes}
+          initialPriority={taskPrefill.priority}
+          suggestionType={taskPrefill.suggestionType}
+          conversationRef={taskPrefill.conversationRef}
+          onClose={() => setTaskPrefill(null)}
+          onCreated={handleTaskCreated}
         />
       )}
 

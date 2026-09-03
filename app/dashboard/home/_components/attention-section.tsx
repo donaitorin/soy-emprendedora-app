@@ -25,22 +25,36 @@ export default function AttentionSection({
   postingStatus,
   unanswered,
   unansweredError,
+  hasPostingTaskToday,
+  respondedConversationRefs,
+  onCreatePostingTask,
+  onCreateConversationTask,
 }: {
   postingStatus: PostingStatus | null;
   unanswered: UnansweredConversation[] | null;
   unansweredError: boolean;
+  hasPostingTaskToday: boolean;
+  respondedConversationRefs: Set<string>;
+  onCreatePostingTask: () => void;
+  onCreateConversationTask: (conversation: UnansweredConversation) => void;
 }) {
   const showPostingAlert =
+    !hasPostingTaskToday &&
     postingStatus !== null &&
     (postingStatus.days_since_last_post === null || postingStatus.days_since_last_post >= 1);
 
-  // `unanswered` en null significa "todavía no respondió" — a diferencia del resto de
-  // la API, este endpoint puede tardar hasta 60s (ver frontend-integration.md), así que
-  // no podemos tratar "sin datos todavía" igual que "revisamos y no hay nada".
+  // `unanswered` en null significa "todavía no sabemos" — a diferencia del resto de la
+  // API, este endpoint puede tardar hasta 60s (ver frontend-integration.md), así que no
+  // podemos tratar "sin datos todavía" igual que "revisamos y no hay nada".
   const unansweredLoading = unanswered === null;
-  const showUnansweredAlert = !unansweredLoading && !unansweredError && unanswered.length > 0;
+  const pendingConversations = unanswered
+    ? unanswered.filter((c) => !respondedConversationRefs.has(c.conversation_id))
+    : [];
+  const showUnansweredAlerts =
+    !unansweredLoading && !unansweredError && pendingConversations.length > 0;
+
   const allClear =
-    !showPostingAlert && !unansweredLoading && !unansweredError && !showUnansweredAlert;
+    !showPostingAlert && !unansweredLoading && !unansweredError && !showUnansweredAlerts;
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
@@ -63,7 +77,11 @@ export default function AttentionSection({
           <p className="mt-1 text-sm text-secondary">
             Publicar algo hoy ayuda a mantener el alcance de tu cuenta.
           </p>
-          <button type="button" className="mt-3 text-sm font-semibold text-accent">
+          <button
+            type="button"
+            onClick={onCreatePostingTask}
+            className="mt-3 text-sm font-semibold text-accent"
+          >
             Crear tarea →
           </button>
         </div>
@@ -81,20 +99,29 @@ export default function AttentionSection({
         </p>
       )}
 
-      {showUnansweredAlert && unanswered && (
-        <div className="rounded-xl border-l-[3px] border-danger bg-danger-soft p-4">
-          <div className="text-sm font-semibold text-primary">
-            {unanswered.map((c) => c.contact_name).join(" y ")}{" "}
-            {unanswered.length === 1 ? "lleva" : "llevan"}{" "}
-            {hoursLabel(Math.max(...unanswered.map((c) => c.hours_since_last_message)))} sin
-            respuesta
-          </div>
-          <p className="mt-1 text-sm text-secondary">
-            Un mensaje hoy puede reactivar la conversación.
-          </p>
-          <button type="button" className="mt-3 text-sm font-semibold text-accent">
-            Crear tarea →
-          </button>
+      {showUnansweredAlerts && (
+        <div className="flex flex-col gap-3">
+          {pendingConversations.map((conversation) => (
+            <div
+              key={conversation.conversation_id}
+              className="rounded-xl border-l-[3px] border-danger bg-danger-soft p-4"
+            >
+              <div className="text-sm font-semibold text-primary">
+                {conversation.contact_name} lleva{" "}
+                {hoursLabel(conversation.hours_since_last_message)} sin respuesta
+              </div>
+              <p className="mt-1 text-sm text-secondary">
+                Un mensaje hoy puede reactivar la conversación.
+              </p>
+              <button
+                type="button"
+                onClick={() => onCreateConversationTask(conversation)}
+                className="mt-3 text-sm font-semibold text-accent"
+              >
+                Crear tarea →
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>

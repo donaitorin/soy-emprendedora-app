@@ -135,6 +135,23 @@ export type PostingStatus = {
 };
 
 export type UnansweredConversation = {
+  conversation_id: string;
   contact_name: string;
   hours_since_last_message: number;
+};
+
+export type TaskPriority = "alta" | "media" | "baja";
+
+export type TaskSuggestionType = "posting_reminder" | "unanswered_conversation";
+
+export type Task = {
+  id: string;
+  account_id: string;
+  title: string;
+  notes: string | null;
+  priority: TaskPriority;
+  done: boolean;
+  suggestion_type: TaskSuggestionType | null;
+  conversation_ref: string | null;
+  created_at: string;
 };
