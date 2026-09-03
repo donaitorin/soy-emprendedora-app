@@ -1,4 +1,4 @@
-import type { LeadChannel, LeadStage } from "./types";
+import type { Lead, LeadChannel, LeadStage } from "./types";
 
 export const LEAD_CHANNELS: { value: LeadChannel; label: string; dot: string }[] = [
   { value: "instagram", label: "Instagram DM", dot: "#B655C9" },
@@ -56,4 +56,22 @@ export function daysLabel(days: number): string {
 // estancada en conversación o propuesta.
 export function isStalling(stage: LeadStage, days: number): boolean {
   return days >= 2 && (stage === "conversacion" || stage === "propuesta");
+}
+
+// Para la sección "Foco de hoy" de Inicio: prioriza leads estancadas (más días primero)
+// y completa el resto con las más nuevas. Excluye "convertida" — esas ya no necesitan
+// atención, están por archivarse.
+export function selectFocusLeads(leads: Lead[], now: Date, limit = 3): Lead[] {
+  const active = leads.filter((lead) => lead.stage !== "convertida");
+  const withDays = active.map((lead) => ({ lead, days: daysSince(lead.stage_changed_at, now) }));
+
+  const stalling = withDays
+    .filter(({ lead, days }) => isStalling(lead.stage, days))
+    .sort((a, b) => b.days - a.days);
+
+  const rest = withDays
+    .filter(({ lead, days }) => !isStalling(lead.stage, days))
+    .sort((a, b) => new Date(b.lead.created_at).getTime() - new Date(a.lead.created_at).getTime());
+
+  return [...stalling, ...rest].slice(0, limit).map(({ lead }) => lead);
 }

@@ -128,3 +128,13 @@ export type LeadStats = {
   conversion_rate: number | null;
   avg_conversion_days: number | null;
 };
+
+export type PostingStatus = {
+  last_post_at: string | null;
+  days_since_last_post: number | null;
+};
+
+export type UnansweredConversation = {
+  contact_name: string;
+  hours_since_last_message: number;
+};
