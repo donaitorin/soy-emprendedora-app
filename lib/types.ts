@@ -45,7 +45,8 @@ export type DashboardInsights = {
   ig_username: string | null;
   followers_count: number | null;
   impressions: number | null;
-  reach: number | null;
+  reach_yesterday: number | null;
+  reach_two_days_ago: number | null;
 };
 
 export type IncomeSource = "mentoria" | "comunidad" | "claridad" | "producto" | "otro";

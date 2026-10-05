@@ -5,16 +5,17 @@ import IncomeModal from "@/app/dashboard/money/_components/income-modal";
 import TaskModal from "@/app/dashboard/_components/task-modal";
 import { api, ApiError } from "@/lib/api";
 import {
-  HARDCODED_REACH_TODAY,
   HARDCODED_WEEKLY_REACH,
   greeting,
   hoursLabel,
   lastNDays,
+  percentChange,
   weekdayLong,
 } from "@/lib/home";
 import { selectFocusLeads } from "@/lib/leads";
 import { formatMoney, sumByDate, toIsoDate } from "@/lib/money";
 import type {
+  DashboardInsights,
   Income,
   Lead,
   LeadsPage,
@@ -45,6 +46,7 @@ export default function DashboardHomePage() {
   const [leadStats, setLeadStats] = useState<LeadStats | null>(null);
   const [leadsBoard, setLeadsBoard] = useState<Lead[] | null>(null);
   const [leadsWeek, setLeadsWeek] = useState<Lead[] | null>(null);
+  const [insights, setInsights] = useState<DashboardInsights | null>(null);
   const [postingStatus, setPostingStatus] = useState<PostingStatus | null>(null);
   // null = todavía no sabemos (sigue cargando) — distinto de "ya revisamos y no hay nada".
   const [unanswered, setUnanswered] = useState<UnansweredConversation[] | null>(null);
@@ -90,10 +92,19 @@ export default function DashboardHomePage() {
         setLeadsWeek(weekLeads.items);
         setTasks(todaysTasks);
 
-        // "Atención hoy" depende de la Graph API de Meta — no bloqueamos el resto de la
-        // pantalla si esto falla o no hay conexión activa. `unanswered-conversations` en
-        // particular puede tardar hasta 60s (timeout propio en el backend), por eso va
+        // Estos tres dependen de la Graph API de Meta — no bloqueamos el resto de la
+        // pantalla si alguno falla o no hay conexión activa. `unanswered-conversations`
+        // en particular puede tardar hasta 60s (timeout propio en el backend), por eso va
         // separado del resto y con su propio estado de carga/error.
+        api
+          .get<DashboardInsights>(`/dashboard/${account.id}/insights`)
+          .then((result) => {
+            if (!cancelled) setInsights(result);
+          })
+          .catch(() => {
+            if (!cancelled) setInsights(null);
+          });
+
         api
           .get<PostingStatus>(`/dashboard/${account.id}/posting-status`)
           .then((result) => {
@@ -185,6 +196,10 @@ export default function DashboardHomePage() {
   const todayIncome = sumByDate(incomesWeek, today);
   const focusLeads = selectFocusLeads(leadsBoard, now, 3);
 
+  const reachChangePct = insights
+    ? percentChange(insights.reach_yesterday, insights.reach_two_days_ago)
+    : null;
+
   const doneTasks = tasks.filter((t) => t.done).length;
   const totalTasks = tasks.length;
   const pendingTasks = totalTasks - doneTasks;
@@ -240,11 +255,23 @@ export default function DashboardHomePage() {
         </div>
         <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
           <div className="text-xs font-semibold uppercase tracking-wide text-tertiary">
-            Alcance
+            Alcance de ayer
           </div>
           <div className="mt-2 text-2xl font-black text-primary">
-            {HARDCODED_REACH_TODAY.toLocaleString("es-AR")}
+            {insights?.reach_yesterday != null
+              ? insights.reach_yesterday.toLocaleString("es-AR")
+              : "Sin datos"}
           </div>
+          {reachChangePct !== null && (
+            <div className="text-xs">
+              <span
+                className={`font-bold ${reachChangePct >= 0 ? "text-success" : "text-danger"}`}
+              >
+                {reachChangePct >= 0 ? "↑" : "↓"} {Math.abs(reachChangePct)}%
+              </span>{" "}
+              <span className="text-tertiary">vs antesdeayer</span>
+            </div>
+          )}
         </div>
         <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
           <div className="text-xs font-semibold uppercase tracking-wide text-tertiary">

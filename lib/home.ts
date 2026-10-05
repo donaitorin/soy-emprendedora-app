@@ -1,7 +1,14 @@
-// "Alcance" todavía no tiene una fuente de datos real definida — placeholder visual a
-// propósito hasta que se defina cómo va a funcionar.
-export const HARDCODED_REACH_TODAY = 1240;
+// El "Alcance" del gráfico semanal todavía no tiene una fuente de datos real definida
+// (a diferencia de la tarjeta de arriba, que ya usa `reach` real de /dashboard/insights)
+// — placeholder visual a propósito hasta que se defina cómo va a funcionar día a día.
 export const HARDCODED_WEEKLY_REACH = [980, 1420, 1240, 1600, 2100, 760, 1100];
+
+// % de variación de una métrica vs. el día anterior. `null` si no hay base de
+// comparación (dato faltante o `previous` en 0, para evitar dividir por cero).
+export function percentChange(current: number | null, previous: number | null): number | null {
+  if (current === null || previous === null || previous === 0) return null;
+  return Math.round(((current - previous) / previous) * 100);
+}
 
 export function greeting(now: Date): string {
   const hour = now.getHours();
