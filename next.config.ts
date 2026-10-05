@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Genera .next/standalone con solo lo necesario para correr en Docker.
+  output: "standalone",
 };
 
 export default nextConfig;

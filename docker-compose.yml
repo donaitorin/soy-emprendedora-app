@@ -1,0 +1,31 @@
+# Desarrollo (hot reload):   docker compose up
+# Producción (build final):  docker compose --profile prod up --build app
+#
+# La URL del backend se toma de NEXT_PUBLIC_API_URL (archivo .env junto a este
+# archivo). Como la llama el navegador, debe ser accesible desde tu máquina.
+services:
+  dev:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - .:/app
+      # Evita que el node_modules del host pise el del contenedor
+      - /app/node_modules
+      - /app/.next
+
+  app:
+    profiles: ["prod"]
+    build:
+      context: .
+      target: runner
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
