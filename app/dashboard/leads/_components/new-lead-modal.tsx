@@ -1,10 +1,19 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { type FormEvent, useState } from "react";
 import Modal from "@/app/dashboard/_components/modal";
 import { api, ApiError } from "@/lib/api";
 import { LEAD_CHANNELS } from "@/lib/leads";
 import type { Lead, LeadChannel } from "@/lib/types";
+
+// El editor se carga solo en el cliente (usa APIs del DOM) y recién al abrir el modal.
+const MarkdownEditor = dynamic(() => import("./markdown-editor"), {
+  ssr: false,
+  loading: () => <div className="h-40 rounded-lg border border-border bg-background" />,
+});
+
+const DESCRIPTION_MAX_LENGTH = 5000;
 
 export default function NewLeadModal({
   accountId,
@@ -17,6 +26,7 @@ export default function NewLeadModal({
 }) {
   const [name, setName] = useState("");
   const [channel, setChannel] = useState<LeadChannel>("instagram");
+  const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,12 +37,18 @@ export default function NewLeadModal({
       return;
     }
 
+    if (description.trim().length > DESCRIPTION_MAX_LENGTH) {
+      setError(`La descripción no puede superar los ${DESCRIPTION_MAX_LENGTH} caracteres.`);
+      return;
+    }
+
     setError(null);
     setLoading(true);
     try {
       const lead = await api.post<Lead>(`/accounts/${accountId}/leads`, {
         name: name.trim(),
         channel,
+        ...(description.trim() && { description: description.trim() }),
       });
       onCreated(lead);
     } catch (err) {
@@ -70,6 +86,17 @@ export default function NewLeadModal({
             ))}
           </select>
         </label>
+
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-secondary">
+            Descripción <span className="font-normal text-tertiary">(opcional)</span>
+          </span>
+          <MarkdownEditor
+            value={description}
+            onChange={setDescription}
+            placeholder="Notas sobre la lead…"
+          />
+        </div>
 
         {error && <p className="text-sm text-danger">{error}</p>}
 

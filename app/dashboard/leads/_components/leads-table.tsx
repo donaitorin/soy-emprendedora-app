@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ConfirmModal from "@/app/dashboard/_components/confirm-modal";
+import LeadDescriptionModal from "./lead-description-modal";
 import { api, ApiError } from "@/lib/api";
 import { leadChannelLabel, leadStageLabel } from "@/lib/leads";
 import type { Lead, LeadsPage } from "@/lib/types";
@@ -28,6 +29,23 @@ function TrashIcon({ className }: { className?: string }) {
   );
 }
 
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
 function statusLabel(lead: Lead): string {
   if (!lead.archived) return leadStageLabel(lead.stage);
   return lead.archive_reason === "converted" ? "Archivada · Convertida" : "Archivada · No convertida";
@@ -47,6 +65,7 @@ export default function LeadsTable({
   const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Lead | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<Lead | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -146,7 +165,15 @@ export default function LeadsTable({
                     {statusLabel(lead)}
                   </span>
                 </td>
-                <td className="py-3 pr-4">
+                <td className="flex items-center gap-1 py-3 pr-4">
+                  <button
+                    type="button"
+                    onClick={() => setViewing(lead)}
+                    aria-label="Ver descripción"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-secondary hover:bg-surface-2 hover:text-primary"
+                  >
+                    <EyeIcon className="h-4 w-4" />
+                  </button>
                   <button
                     type="button"
                     onClick={() => setPendingDelete(lead)}
@@ -187,6 +214,8 @@ export default function LeadsTable({
           </div>
         </div>
       )}
+
+      {viewing && <LeadDescriptionModal lead={viewing} onClose={() => setViewing(null)} />}
 
       {pendingDelete && (
         <ConfirmModal

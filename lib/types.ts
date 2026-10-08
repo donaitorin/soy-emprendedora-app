@@ -107,6 +107,7 @@ export type Lead = {
   account_id: string;
   name: string;
   channel: LeadChannel;
+  description: string | null;
   stage: LeadStage;
   stage_changed_at: string;
   converted_at: string | null;
