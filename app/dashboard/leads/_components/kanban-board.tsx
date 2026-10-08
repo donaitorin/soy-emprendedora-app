@@ -3,19 +3,20 @@
 import { DndContext, type DragEndEvent, useDroppable } from "@dnd-kit/core";
 import { LEAD_STAGES, leadStageLabel } from "@/lib/leads";
 import type { Lead, LeadStage } from "@/lib/types";
+import type { DiscardReason } from "./discard-lead-modal";
 import LeadCard from "./lead-card";
 
 function KanbanColumn({
   stage,
   leads,
   now,
-  onArchive,
+  onDiscard,
   archivingId,
 }: {
   stage: LeadStage;
   leads: Lead[];
   now: Date;
-  onArchive: (lead: Lead) => void;
+  onDiscard: (lead: Lead, reason: DiscardReason, note: string) => void;
   archivingId: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage });
@@ -39,7 +40,7 @@ function KanbanColumn({
             key={lead.id}
             lead={lead}
             now={now}
-            onArchive={onArchive}
+            onDiscard={onDiscard}
             archiving={archivingId === lead.id}
           />
         ))}
@@ -52,13 +53,13 @@ export default function KanbanBoard({
   leads,
   now,
   onMoveStage,
-  onArchive,
+  onDiscard,
   archivingId,
 }: {
   leads: Lead[];
   now: Date;
   onMoveStage: (lead: Lead, stage: LeadStage) => void;
-  onArchive: (lead: Lead) => void;
+  onDiscard: (lead: Lead, reason: DiscardReason, note: string) => void;
   archivingId: string | null;
 }) {
   function handleDragEnd(event: DragEndEvent) {
@@ -82,7 +83,7 @@ export default function KanbanBoard({
             stage={value}
             leads={leads.filter((lead) => lead.stage === value)}
             now={now}
-            onArchive={onArchive}
+            onDiscard={onDiscard}
             archivingId={archivingId}
           />
         ))}

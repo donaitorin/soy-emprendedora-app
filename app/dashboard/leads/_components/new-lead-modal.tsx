@@ -1,17 +1,11 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { type FormEvent, useState } from "react";
 import Modal from "@/app/dashboard/_components/modal";
 import { api, ApiError } from "@/lib/api";
 import { LEAD_CHANNELS } from "@/lib/leads";
 import type { Lead, LeadChannel } from "@/lib/types";
-
-// El editor se carga solo en el cliente (usa APIs del DOM) y recién al abrir el modal.
-const MarkdownEditor = dynamic(() => import("./markdown-editor"), {
-  ssr: false,
-  loading: () => <div className="h-40 rounded-lg border border-border bg-background" />,
-});
+import MarkdownEditor from "./lazy-markdown-editor";
 
 const DESCRIPTION_MAX_LENGTH = 5000;
 

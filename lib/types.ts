@@ -113,6 +113,7 @@ export type Lead = {
   converted_at: string | null;
   archived: boolean;
   archive_reason: LeadArchiveReason | null;
+  archive_note: string | null;
   archived_at: string | null;
   created_at: string;
 };

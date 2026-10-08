@@ -2,19 +2,19 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { useState } from "react";
-import ConfirmModal from "@/app/dashboard/_components/confirm-modal";
 import { daysLabel, daysSince, isStalling, leadChannelDot, leadChannelLabel } from "@/lib/leads";
 import type { Lead } from "@/lib/types";
+import DiscardLeadModal, { type DiscardReason } from "./discard-lead-modal";
 
 export default function LeadCard({
   lead,
   now,
-  onArchive,
+  onDiscard,
   archiving,
 }: {
   lead: Lead;
   now: Date;
-  onArchive: (lead: Lead) => void;
+  onDiscard: (lead: Lead, reason: DiscardReason, note: string) => void;
   archiving: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -22,9 +22,9 @@ export default function LeadCard({
   });
   const [confirming, setConfirming] = useState(false);
 
-  function handleConfirmArchive() {
+  function handleConfirmDiscard(reason: DiscardReason, note: string) {
     setConfirming(false);
-    onArchive(lead);
+    onDiscard(lead, reason, note);
   }
 
   const days = daysSince(lead.stage_changed_at, now);
@@ -81,12 +81,10 @@ export default function LeadCard({
       </div>
 
       {confirming && (
-        <ConfirmModal
-          title="Descartar lead"
-          message={`¿Seguro que querés descartar a ${lead.name}? Se va a archivar como no convertida.`}
-          confirmLabel="Descartar"
+        <DiscardLeadModal
+          leadName={lead.name}
           loading={archiving}
-          onConfirm={handleConfirmArchive}
+          onConfirm={handleConfirmDiscard}
           onCancel={() => setConfirming(false)}
         />
       )}

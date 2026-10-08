@@ -5,6 +5,7 @@ import ConfirmModal from "../_components/confirm-modal";
 import { api, ApiError } from "@/lib/api";
 import type { Lead, LeadStage, LeadStats, User } from "@/lib/types";
 import { PlusIcon } from "../_components/icons";
+import type { DiscardReason } from "./_components/discard-lead-modal";
 import KanbanBoard from "./_components/kanban-board";
 import LeadsTable from "./_components/leads-table";
 import NewLeadModal from "./_components/new-lead-modal";
@@ -89,19 +90,26 @@ export default function DashboardLeadsPage() {
     }
   }
 
-  async function handleArchive(lead: Lead) {
+  // "Se creó por error" es un soft delete: la lead desaparece de todo y no entra en
+  // ninguna métrica. "No se logró convertir" la archiva y sí cuenta en la conversión.
+  async function handleDiscard(lead: Lead, reason: DiscardReason, note: string) {
     if (!accountId) return;
     setArchivingId(lead.id);
     try {
-      await api.post(`/accounts/${accountId}/leads/${lead.id}/archive`, {
-        reason: "not_converted",
-      });
+      if (reason === "mistake") {
+        await api.delete(`/accounts/${accountId}/leads/${lead.id}`);
+      } else {
+        await api.post(`/accounts/${accountId}/leads/${lead.id}/archive`, {
+          reason: "not_converted",
+          ...(note && { note }),
+        });
+      }
       setLeads((prev) => (prev ? prev.filter((l) => l.id !== lead.id) : prev));
-      showToast(`${lead.name} archivada`);
+      showToast(reason === "mistake" ? `${lead.name} eliminada` : `${lead.name} archivada`);
       refreshStats(accountId);
       setTableRefreshKey((k) => k + 1);
     } catch (err) {
-      showToast(err instanceof ApiError ? err.message : "No se pudo archivar la lead");
+      showToast(err instanceof ApiError ? err.message : "No se pudo descartar la lead");
     } finally {
       setArchivingId(null);
     }
@@ -206,7 +214,7 @@ export default function DashboardLeadsPage() {
         leads={leads}
         now={now}
         onMoveStage={handleMoveStage}
-        onArchive={handleArchive}
+        onDiscard={handleDiscard}
         archivingId={archivingId}
       />
 
