@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import ConfirmModal from "@/app/dashboard/_components/confirm-modal";
+import { PdfIcon, PencilIcon } from "@/app/dashboard/_components/icons";
+import EditLeadModal from "./edit-lead-modal";
 import LeadDescriptionModal from "./lead-description-modal";
+import PdfLeadModal from "./pdf-lead-modal";
 import { api, ApiError } from "@/lib/api";
 import { leadChannelLabel, leadStageLabel } from "@/lib/leads";
 import type { Lead, LeadsPage } from "@/lib/types";
@@ -55,10 +58,12 @@ export default function LeadsTable({
   accountId,
   refreshKey,
   onLeadDeleted,
+  onLeadUpdated,
 }: {
   accountId: string;
   refreshKey?: number;
   onLeadDeleted?: (lead: Lead) => void;
+  onLeadUpdated?: (lead: Lead, message?: string) => void;
 }) {
   const [page, setPage] = useState(1);
   const [data, setData] = useState<LeadsPage | null>(null);
@@ -66,6 +71,8 @@ export default function LeadsTable({
   const [pendingDelete, setPendingDelete] = useState<Lead | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [viewing, setViewing] = useState<Lead | null>(null);
+  const [editing, setEditing] = useState<Lead | null>(null);
+  const [managingPdf, setManagingPdf] = useState<Lead | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,6 +96,13 @@ export default function LeadsTable({
       cancelled = true;
     };
   }, [accountId, page, refreshKey]);
+
+  function applyUpdate(updated: Lead, message: string) {
+    setData((prev) =>
+      prev ? { ...prev, items: prev.items.map((i) => (i.id === updated.id ? updated : i)) } : prev
+    );
+    onLeadUpdated?.(updated, message);
+  }
 
   async function handleDelete(lead: Lead) {
     const wasLastOnPage = data?.items.length === 1;
@@ -165,7 +179,8 @@ export default function LeadsTable({
                     {statusLabel(lead)}
                   </span>
                 </td>
-                <td className="flex items-center gap-1 py-3 pr-4">
+                <td className="py-3 pr-4">
+                  <div className="grid w-fit grid-cols-2 gap-1">
                   <button
                     type="button"
                     onClick={() => setViewing(lead)}
@@ -182,6 +197,25 @@ export default function LeadsTable({
                   >
                     <TrashIcon className="h-4 w-4" />
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setManagingPdf(lead)}
+                    aria-label={lead.pdf_filename ? "Ver PDF adjunto" : "Adjuntar PDF"}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg hover:bg-surface-2 hover:text-primary ${
+                      lead.pdf_filename ? "text-accent" : "text-secondary"
+                    }`}
+                  >
+                    <PdfIcon className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditing(lead)}
+                    aria-label="Editar lead"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-secondary hover:bg-surface-2 hover:text-primary"
+                  >
+                    <PencilIcon className="h-4 w-4" />
+                  </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -216,6 +250,30 @@ export default function LeadsTable({
       )}
 
       {viewing && <LeadDescriptionModal lead={viewing} onClose={() => setViewing(null)} />}
+
+      {editing && (
+        <EditLeadModal
+          accountId={accountId}
+          lead={editing}
+          onClose={() => setEditing(null)}
+          onSaved={(updated) => {
+            setEditing(null);
+            applyUpdate(updated, "Lead actualizada");
+          }}
+        />
+      )}
+
+      {managingPdf && (
+        <PdfLeadModal
+          accountId={accountId}
+          lead={managingPdf}
+          onClose={() => setManagingPdf(null)}
+          onUploaded={(updated) => {
+            setManagingPdf(updated);
+            applyUpdate(updated, "PDF guardado");
+          }}
+        />
+      )}
 
       {pendingDelete && (
         <ConfirmModal

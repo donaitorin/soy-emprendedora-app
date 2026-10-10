@@ -28,7 +28,7 @@ function KanbanColumn({
   now: Date;
   onDiscard: (lead: Lead, reason: DiscardReason, note: string) => void;
   onSchedule: (lead: Lead, isoDatetime: string | null) => Promise<boolean>;
-  onLeadUpdated: (lead: Lead) => void;
+  onLeadUpdated: (lead: Lead, message?: string) => void;
   archivingId: string | null;
   accountId: string;
 }) {
@@ -80,7 +80,7 @@ export default function KanbanBoard({
   onMoveStage: (lead: Lead, stage: LeadStage) => void;
   onDiscard: (lead: Lead, reason: DiscardReason, note: string) => void;
   onSchedule: (lead: Lead, isoDatetime: string | null) => Promise<boolean>;
-  onLeadUpdated: (lead: Lead) => void;
+  onLeadUpdated: (lead: Lead, message?: string) => void;
   archivingId: string | null;
   accountId: string;
 }) {

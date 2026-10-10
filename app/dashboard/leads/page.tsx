@@ -115,9 +115,10 @@ export default function DashboardLeadsPage() {
     }
   }
 
-  function handleLeadUpdated(updated: Lead) {
+  function handleLeadUpdated(updated: Lead, message = "Cambios guardados") {
     setLeads((prev) => (prev ? prev.map((l) => (l.id === updated.id ? updated : l)) : prev));
-    showToast("PDF guardado");
+    showToast(message);
+    setTableRefreshKey((k) => k + 1);
   }
 
   // Devuelve si se guardó, para que el modal se cierre solo cuando salió bien.
@@ -248,6 +249,7 @@ export default function DashboardLeadsPage() {
           accountId={accountId}
           refreshKey={tableRefreshKey}
           onLeadDeleted={handleLeadDeletedFromTable}
+          onLeadUpdated={handleLeadUpdated}
         />
       </section>
 

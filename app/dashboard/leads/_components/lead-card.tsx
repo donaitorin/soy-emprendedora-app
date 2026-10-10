@@ -13,6 +13,8 @@ import {
 import type { Lead } from "@/lib/types";
 import DiscardLeadModal, { type DiscardReason } from "./discard-lead-modal";
 import LeadDescriptionModal from "./lead-description-modal";
+import { PdfIcon, PencilIcon } from "@/app/dashboard/_components/icons";
+import EditLeadModal from "./edit-lead-modal";
 import PdfLeadModal from "./pdf-lead-modal";
 import ScheduleLeadModal from "./schedule-lead-modal";
 
@@ -35,25 +37,6 @@ function CalendarIcon({ className }: { className?: string }) {
   );
 }
 
-function PdfIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6" />
-      <path d="M9 13h6" />
-      <path d="M9 17h4" />
-    </svg>
-  );
-}
-
 export default function LeadCard({
   lead,
   now,
@@ -68,7 +51,7 @@ export default function LeadCard({
   accountId: string;
   onDiscard: (lead: Lead, reason: DiscardReason, note: string) => void;
   onSchedule: (lead: Lead, isoDatetime: string | null) => Promise<boolean>;
-  onLeadUpdated: (lead: Lead) => void;
+  onLeadUpdated: (lead: Lead, message?: string) => void;
   archiving: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -78,6 +61,7 @@ export default function LeadCard({
   const [scheduling, setScheduling] = useState(false);
   const [viewing, setViewing] = useState(false);
   const [managingPdf, setManagingPdf] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [savingSchedule, setSavingSchedule] = useState(false);
 
   async function handleSaveSchedule(isoDatetime: string | null) {
@@ -155,6 +139,17 @@ export default function LeadCard({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                setEditing(true);
+              }}
+              aria-label="Editar lead"
+              className="flex h-6.5 w-6.5 items-center justify-center rounded-lg border border-border text-secondary hover:border-accent hover:text-accent"
+            >
+              <PencilIcon className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
                 setScheduling(true);
               }}
               aria-label={lead.scheduled_at ? "Cambiar agenda" : "Agendar"}
@@ -189,12 +184,24 @@ export default function LeadCard({
 
       {viewing && <LeadDescriptionModal lead={lead} onClose={() => setViewing(false)} />}
 
+      {editing && (
+        <EditLeadModal
+          accountId={accountId}
+          lead={lead}
+          onClose={() => setEditing(false)}
+          onSaved={(updated) => {
+            setEditing(false);
+            onLeadUpdated(updated, "Lead actualizada");
+          }}
+        />
+      )}
+
       {managingPdf && (
         <PdfLeadModal
           accountId={accountId}
           lead={lead}
           onClose={() => setManagingPdf(false)}
-          onUploaded={onLeadUpdated}
+          onUploaded={(updated) => onLeadUpdated(updated, "PDF guardado")}
         />
       )}
 
