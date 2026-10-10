@@ -115,8 +115,17 @@ export type Lead = {
   archive_reason: LeadArchiveReason | null;
   archive_note: string | null;
   scheduled_at: string | null;
+  pdf_filename: string | null;
+  pdf_size: number | null;
+  pdf_uploaded_at: string | null;
   archived_at: string | null;
   created_at: string;
+};
+
+export type LeadPdfDownload = {
+  url: string;
+  filename: string;
+  expires_in: number;
 };
 
 export type LeadsPage = {

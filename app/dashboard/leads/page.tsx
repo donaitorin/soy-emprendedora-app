@@ -115,6 +115,11 @@ export default function DashboardLeadsPage() {
     }
   }
 
+  function handleLeadUpdated(updated: Lead) {
+    setLeads((prev) => (prev ? prev.map((l) => (l.id === updated.id ? updated : l)) : prev));
+    showToast("PDF guardado");
+  }
+
   // Devuelve si se guardó, para que el modal se cierre solo cuando salió bien.
   async function handleSchedule(lead: Lead, isoDatetime: string | null): Promise<boolean> {
     if (!accountId) return false;
@@ -232,6 +237,8 @@ export default function DashboardLeadsPage() {
         onMoveStage={handleMoveStage}
         onDiscard={handleDiscard}
         onSchedule={handleSchedule}
+        onLeadUpdated={handleLeadUpdated}
+        accountId={accountId}
         archivingId={archivingId}
       />
 

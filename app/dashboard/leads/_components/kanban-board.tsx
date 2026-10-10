@@ -19,6 +19,8 @@ function KanbanColumn({
   now,
   onDiscard,
   onSchedule,
+  onLeadUpdated,
+  accountId,
   archivingId,
 }: {
   stage: LeadStage;
@@ -26,7 +28,9 @@ function KanbanColumn({
   now: Date;
   onDiscard: (lead: Lead, reason: DiscardReason, note: string) => void;
   onSchedule: (lead: Lead, isoDatetime: string | null) => Promise<boolean>;
+  onLeadUpdated: (lead: Lead) => void;
   archivingId: string | null;
+  accountId: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage });
 
@@ -51,6 +55,8 @@ function KanbanColumn({
             now={now}
             onDiscard={onDiscard}
             onSchedule={onSchedule}
+            onLeadUpdated={onLeadUpdated}
+            accountId={accountId}
             archiving={archivingId === lead.id}
           />
         ))}
@@ -65,6 +71,8 @@ export default function KanbanBoard({
   onMoveStage,
   onDiscard,
   onSchedule,
+  onLeadUpdated,
+  accountId,
   archivingId,
 }: {
   leads: Lead[];
@@ -72,7 +80,9 @@ export default function KanbanBoard({
   onMoveStage: (lead: Lead, stage: LeadStage) => void;
   onDiscard: (lead: Lead, reason: DiscardReason, note: string) => void;
   onSchedule: (lead: Lead, isoDatetime: string | null) => Promise<boolean>;
+  onLeadUpdated: (lead: Lead) => void;
   archivingId: string | null;
+  accountId: string;
 }) {
   // Sin distancia mínima el drag arrancaría en el pointerdown y se comería los clicks.
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
@@ -100,6 +110,8 @@ export default function KanbanBoard({
             now={now}
             onDiscard={onDiscard}
             onSchedule={onSchedule}
+            onLeadUpdated={onLeadUpdated}
+            accountId={accountId}
             archivingId={archivingId}
           />
         ))}

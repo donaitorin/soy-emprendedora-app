@@ -102,3 +102,20 @@ export function toDatetimeLocalValue(isoDatetime: string | null): string {
 export function fromDatetimeLocalValue(value: string): string {
   return new Date(value).toISOString();
 }
+
+export const PDF_MAX_BYTES = 10 * 1024 * 1024;
+
+// Misma validación que hace el backend (que es quien manda): sirve para avisar rápido,
+// sin subir un archivo que de todas formas va a ser rechazado.
+export function validatePdfFile(file: File): string | null {
+  const isPdf = file.type === "application/pdf" && file.name.toLowerCase().endsWith(".pdf");
+  if (!isPdf) return "El archivo tiene que ser un PDF.";
+  if (file.size === 0) return "El archivo está vacío.";
+  if (file.size > PDF_MAX_BYTES) return "El PDF no puede pesar más de 10 MB.";
+  return null;
+}
+
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}

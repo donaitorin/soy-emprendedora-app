@@ -13,6 +13,7 @@ import {
 import type { Lead } from "@/lib/types";
 import DiscardLeadModal, { type DiscardReason } from "./discard-lead-modal";
 import LeadDescriptionModal from "./lead-description-modal";
+import PdfLeadModal from "./pdf-lead-modal";
 import ScheduleLeadModal from "./schedule-lead-modal";
 
 function CalendarIcon({ className }: { className?: string }) {
@@ -34,17 +35,40 @@ function CalendarIcon({ className }: { className?: string }) {
   );
 }
 
+function PdfIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <path d="M9 13h6" />
+      <path d="M9 17h4" />
+    </svg>
+  );
+}
+
 export default function LeadCard({
   lead,
   now,
+  accountId,
   onDiscard,
   onSchedule,
+  onLeadUpdated,
   archiving,
 }: {
   lead: Lead;
   now: Date;
+  accountId: string;
   onDiscard: (lead: Lead, reason: DiscardReason, note: string) => void;
   onSchedule: (lead: Lead, isoDatetime: string | null) => Promise<boolean>;
+  onLeadUpdated: (lead: Lead) => void;
   archiving: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -53,6 +77,7 @@ export default function LeadCard({
   const [confirming, setConfirming] = useState(false);
   const [scheduling, setScheduling] = useState(false);
   const [viewing, setViewing] = useState(false);
+  const [managingPdf, setManagingPdf] = useState(false);
   const [savingSchedule, setSavingSchedule] = useState(false);
 
   async function handleSaveSchedule(isoDatetime: string | null) {
@@ -110,6 +135,21 @@ export default function LeadCard({
           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-primary" title={lead.name}>
             {lead.name}
           </span>
+          {showArchiveButton && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setConfirming(true);
+              }}
+              disabled={archiving}
+              className="shrink-0 rounded-lg border border-border px-2 py-1 text-[11px] font-semibold text-secondary hover:border-danger hover:text-danger disabled:opacity-60"
+            >
+              {archiving ? "…" : "Descartar"}
+            </button>
+          )}
+        </div>
+        <div className="mt-2 flex items-center justify-end gap-2">
           <div className="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
@@ -124,30 +164,39 @@ export default function LeadCard({
             >
               <CalendarIcon className="h-3.5 w-3.5" />
             </button>
-            {showArchiveButton && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setConfirming(true);
-                }}
-                disabled={archiving}
-                className="shrink-0 rounded-lg border border-border px-2 py-1 text-[11px] font-semibold text-secondary hover:border-danger hover:text-danger disabled:opacity-60"
-              >
-                {archiving ? "…" : "Descartar"}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setManagingPdf(true);
+              }}
+              aria-label={lead.pdf_filename ? "Ver PDF adjunto" : "Adjuntar PDF"}
+              className={`flex h-6.5 w-6.5 items-center justify-center rounded-lg border hover:border-accent hover:text-accent ${
+                lead.pdf_filename ? "border-accent text-accent" : "border-border text-secondary"
+              }`}
+            >
+              <PdfIcon className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
         {lead.scheduled_at && (
           <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-accent">
-            <CalendarIcon className="h-3 w-3" />
+            <CalendarIcon className="h-3 w-3 shrink-0" />
             {formatSchedule(lead.scheduled_at)}
           </div>
         )}
       </div>
 
       {viewing && <LeadDescriptionModal lead={lead} onClose={() => setViewing(false)} />}
+
+      {managingPdf && (
+        <PdfLeadModal
+          accountId={accountId}
+          lead={lead}
+          onClose={() => setManagingPdf(false)}
+          onUploaded={onLeadUpdated}
+        />
+      )}
 
       {scheduling && (
         <ScheduleLeadModal
