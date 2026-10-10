@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { clearToken } from "@/lib/auth";
+import SuggestionModal from "./_components/suggestion-modal";
 import type { MetaStatus, User } from "@/lib/types";
 
 function HomeIcon({ className }: { className?: string }) {
@@ -55,6 +56,16 @@ function ActionsIcon({ className }: { className?: string }) {
   );
 }
 
+function SuggestionIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+      <path d="M9 18h6" />
+      <path d="M10 22h4" />
+    </svg>
+  );
+}
+
 function LogoutIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -79,6 +90,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [businessName, setBusinessName] = useState<string | null>(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
   const [imageFailed, setImageFailed] = useState(false);
+  const [accountId, setAccountId] = useState<string | null>(null);
+  const [showSuggestion, setShowSuggestion] = useState(false);
 
   useEffect(() => {
     async function loadBusiness() {
@@ -86,6 +99,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const me = await api.get<User>("/auth/me");
         const account = me.accounts[0];
         if (!account) return;
+        setAccountId(account.id);
 
         const status = await api.get<MetaStatus>(`/meta/status?account_id=${account.id}`);
         const metaName = status.page_name ?? (status.ig_username ? `@${status.ig_username}` : null);
@@ -150,19 +164,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="mt-auto flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-sm font-semibold text-secondary transition-colors hover:border-accent hover:text-accent"
-        >
-          <LogoutIcon className="h-4.5 w-4.5" />
-          Cerrar sesión
-        </button>
+        <div className="mt-auto flex flex-col gap-2">
+          {accountId && (
+            <button
+              type="button"
+              onClick={() => setShowSuggestion(true)}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-secondary transition-colors hover:bg-surface-2 hover:text-accent"
+            >
+              <SuggestionIcon className="h-4.5 w-4.5" />
+              Sugerencias
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-sm font-semibold text-secondary transition-colors hover:border-accent hover:text-accent"
+          >
+            <LogoutIcon className="h-4.5 w-4.5" />
+            Cerrar sesión
+          </button>
+        </div>
       </aside>
 
       <main className="min-w-0 flex-1 px-10 py-8">
         <div className="mx-auto w-full max-w-330">{children}</div>
       </main>
+
+      {showSuggestion && accountId && (
+        <SuggestionModal accountId={accountId} onClose={() => setShowSuggestion(false)} />
+      )}
     </div>
   );
 }

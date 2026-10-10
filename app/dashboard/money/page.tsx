@@ -14,13 +14,32 @@ import {
 import type { Expense, Income, Movement, User } from "@/lib/types";
 import { PlusIcon } from "../_components/icons";
 import ExpenseModal from "./_components/expense-modal";
+import ExportModal from "./_components/export-modal";
 import HistoryChart from "./_components/history-chart";
 import IncomeModal from "./_components/income-modal";
 import MonthlyIncomeChart from "./_components/monthly-income-chart";
 import MovementsTable from "./_components/movements-table";
 import SourceBreakdown from "./_components/source-breakdown";
 
-type ModalKind = "income" | "expense" | null;
+function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M12 15V3" />
+    </svg>
+  );
+}
+
+type ModalKind = "income" | "expense" | "export" | null;
 
 export default function DashboardMoneyPage() {
   const [accountId, setAccountId] = useState<string | null>(null);
@@ -172,9 +191,17 @@ export default function DashboardMoneyPage() {
       </section>
 
       <section className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
-        <h2 className="mb-4 font-serif text-lg font-semibold text-primary">
-          Todos los movimientos
-        </h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-serif text-lg font-semibold text-primary">Todos los movimientos</h2>
+          <button
+            type="button"
+            onClick={() => setModal("export")}
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-sm font-semibold text-secondary hover:border-accent hover:text-accent"
+          >
+            <DownloadIcon className="h-3.75 w-3.75" />
+            Exportar
+          </button>
+        </div>
         <MovementsTable accountId={accountId} onMovementDeleted={handleMovementDeleted} />
       </section>
 
@@ -190,6 +217,17 @@ export default function DashboardMoneyPage() {
           accountId={accountId}
           onClose={() => setModal(null)}
           onCreated={handleExpenseCreated}
+        />
+      )}
+
+      {modal === "export" && (
+        <ExportModal
+          accountId={accountId}
+          onClose={() => setModal(null)}
+          onExported={() => {
+            setModal(null);
+            showToast("Excel descargado");
+          }}
         />
       )}
 

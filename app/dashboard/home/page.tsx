@@ -2,17 +2,15 @@
 
 import { useEffect, useState } from "react";
 import IncomeModal from "@/app/dashboard/money/_components/income-modal";
-import TaskModal from "@/app/dashboard/_components/task-modal";
 import { api, ApiError } from "@/lib/api";
 import {
   HARDCODED_WEEKLY_REACH,
   greeting,
-  hoursLabel,
   lastNDays,
   percentChange,
   weekdayLong,
 } from "@/lib/home";
-import { selectFocusLeads } from "@/lib/leads";
+import { selectScheduledLeads } from "@/lib/leads";
 import { formatMoney, sumByDate, toIsoDate } from "@/lib/money";
 import type {
   DashboardInsights,
@@ -20,24 +18,12 @@ import type {
   Lead,
   LeadsPage,
   LeadStats,
-  PostingStatus,
   Task,
-  TaskPriority,
-  TaskSuggestionType,
-  UnansweredConversation,
   User,
 } from "@/lib/types";
 import AttentionSection from "./_components/attention-section";
 import FocusLeads from "./_components/focus-leads";
 import WeeklyChart, { type WeeklyRow } from "./_components/weekly-chart";
-
-type TaskPrefill = {
-  title: string;
-  notes: string;
-  priority: TaskPriority;
-  suggestionType: TaskSuggestionType;
-  conversationRef: string | null;
-};
 
 export default function DashboardHomePage() {
   const [accountId, setAccountId] = useState<string | null>(null);
@@ -47,14 +33,10 @@ export default function DashboardHomePage() {
   const [leadsBoard, setLeadsBoard] = useState<Lead[] | null>(null);
   const [leadsWeek, setLeadsWeek] = useState<Lead[] | null>(null);
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
-  const [postingStatus, setPostingStatus] = useState<PostingStatus | null>(null);
-  // null = todavía no sabemos (sigue cargando) — distinto de "ya revisamos y no hay nada".
-  const [unanswered, setUnanswered] = useState<UnansweredConversation[] | null>(null);
-  const [unansweredError, setUnansweredError] = useState(false);
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showIncomeModal, setShowIncomeModal] = useState(false);
-  const [taskPrefill, setTaskPrefill] = useState<TaskPrefill | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -92,10 +74,8 @@ export default function DashboardHomePage() {
         setLeadsWeek(weekLeads.items);
         setTasks(todaysTasks);
 
-        // Estos tres dependen de la Graph API de Meta — no bloqueamos el resto de la
-        // pantalla si alguno falla o no hay conexión activa. `unanswered-conversations`
-        // en particular puede tardar hasta 60s (timeout propio en el backend), por eso va
-        // separado del resto y con su propio estado de carga/error.
+        // Depende de la Graph API de Meta — no bloqueamos el resto de la pantalla si
+        // falla o no hay conexión activa.
         api
           .get<DashboardInsights>(`/dashboard/${account.id}/insights`)
           .then((result) => {
@@ -105,29 +85,6 @@ export default function DashboardHomePage() {
             if (!cancelled) setInsights(null);
           });
 
-        api
-          .get<PostingStatus>(`/dashboard/${account.id}/posting-status`)
-          .then((result) => {
-            if (!cancelled) setPostingStatus(result);
-          })
-          .catch(() => {
-            if (!cancelled) setPostingStatus(null);
-          });
-
-        api
-          .get<UnansweredConversation[]>(`/dashboard/${account.id}/unanswered-conversations`)
-          .then((result) => {
-            if (!cancelled) {
-              setUnanswered(result);
-              setUnansweredError(false);
-            }
-          })
-          .catch(() => {
-            if (!cancelled) {
-              setUnanswered([]);
-              setUnansweredError(true);
-            }
-          });
       } catch (err) {
         if (!cancelled) {
           setLoadError(err instanceof ApiError ? err.message : "No se pudo cargar el inicio");
@@ -151,36 +108,26 @@ export default function DashboardHomePage() {
     showToast(`Ingreso registrado: ${formatMoney(Number(income.amount))}`);
   }
 
-  function handleTaskCreated(task: Task) {
-    setTasks((prev) => (prev ? [task, ...prev] : [task]));
-    setTaskPrefill(null);
-    showToast("Tarea agregada");
-  }
-
-  function handleCreatePostingTask() {
-    if (!postingStatus) return;
-    setTaskPrefill({
-      title: "Publicar contenido hoy",
-      notes:
-        postingStatus.days_since_last_post === null
-          ? "Todavía no publicaste contenido en tu Instagram conectado."
-          : `Llevás ${postingStatus.days_since_last_post} ${
-              postingStatus.days_since_last_post === 1 ? "día" : "días"
-            } sin publicar`,
-      priority: "alta",
-      suggestionType: "posting_reminder",
-      conversationRef: null,
-    });
-  }
-
-  function handleCreateConversationTask(conversation: UnansweredConversation) {
-    setTaskPrefill({
-      title: `Responder a ${conversation.contact_name}`,
-      notes: `Lleva ${hoursLabel(conversation.hours_since_last_message)} sin seguimiento`,
-      priority: "alta",
-      suggestionType: "unanswered_conversation",
-      conversationRef: conversation.conversation_id,
-    });
+  async function handleToggleTask(task: Task) {
+    if (!accountId) return;
+    const nextDone = !task.done;
+    setTogglingId(task.id);
+    setTasks((prev) =>
+      prev ? prev.map((t) => (t.id === task.id ? { ...t, done: nextDone } : t)) : prev
+    );
+    try {
+      const updated = await api.patch<Task>(`/accounts/${accountId}/tasks/${task.id}`, {
+        done: nextDone,
+      });
+      setTasks((prev) => (prev ? prev.map((t) => (t.id === task.id ? updated : t)) : prev));
+    } catch (err) {
+      setTasks((prev) =>
+        prev ? prev.map((t) => (t.id === task.id ? { ...t, done: task.done } : t)) : prev
+      );
+      showToast(err instanceof ApiError ? err.message : "No se pudo actualizar la tarea");
+    } finally {
+      setTogglingId(null);
+    }
   }
 
   if (loadError) {
@@ -194,7 +141,7 @@ export default function DashboardHomePage() {
   const now = new Date();
   const today = toIsoDate(now);
   const todayIncome = sumByDate(incomesWeek, today);
-  const focusLeads = selectFocusLeads(leadsBoard, now, 3);
+  const scheduledLeads = selectScheduledLeads(leadsBoard, now);
 
   const reachChangePct = insights
     ? percentChange(insights.reach_yesterday, insights.reach_two_days_ago)
@@ -204,12 +151,6 @@ export default function DashboardHomePage() {
   const totalTasks = tasks.length;
   const pendingTasks = totalTasks - doneTasks;
   const tasksPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-  const hasPostingTaskToday = tasks.some((t) => t.suggestion_type === "posting_reminder");
-  const respondedConversationRefs = new Set(
-    tasks
-      .filter((t) => t.suggestion_type === "unanswered_conversation" && t.conversation_ref)
-      .map((t) => t.conversation_ref as string)
-  );
 
   const weeklyRows: WeeklyRow[] = lastNDays(now, 7).map((date, index) => {
     const iso = toIsoDate(date);
@@ -294,16 +235,8 @@ export default function DashboardHomePage() {
       </section>
 
       <section className="grid grid-cols-1 gap-5 lg:grid-cols-[1.5fr_1fr]">
-        <AttentionSection
-          postingStatus={postingStatus}
-          unanswered={unanswered}
-          unansweredError={unansweredError}
-          hasPostingTaskToday={hasPostingTaskToday}
-          respondedConversationRefs={respondedConversationRefs}
-          onCreatePostingTask={handleCreatePostingTask}
-          onCreateConversationTask={handleCreateConversationTask}
-        />
-        <FocusLeads leads={focusLeads} now={now} />
+        <AttentionSection tasks={tasks} togglingId={togglingId} onToggle={handleToggleTask} />
+        <FocusLeads leads={scheduledLeads} now={now} />
       </section>
 
       <section className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
@@ -319,18 +252,6 @@ export default function DashboardHomePage() {
         />
       )}
 
-      {taskPrefill && (
-        <TaskModal
-          accountId={accountId}
-          initialTitle={taskPrefill.title}
-          initialNotes={taskPrefill.notes}
-          initialPriority={taskPrefill.priority}
-          suggestionType={taskPrefill.suggestionType}
-          conversationRef={taskPrefill.conversationRef}
-          onClose={() => setTaskPrefill(null)}
-          onCreated={handleTaskCreated}
-        />
-      )}
 
       {toast && (
         <div className="fixed bottom-7 left-1/2 z-60 -translate-x-1/2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-background shadow-lg">

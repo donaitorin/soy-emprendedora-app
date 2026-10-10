@@ -1,6 +1,13 @@
 "use client";
 
-import { DndContext, type DragEndEvent, useDroppable } from "@dnd-kit/core";
+import {
+  DndContext,
+  type DragEndEvent,
+  PointerSensor,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { LEAD_STAGES, leadStageLabel } from "@/lib/leads";
 import type { Lead, LeadStage } from "@/lib/types";
 import type { DiscardReason } from "./discard-lead-modal";
@@ -11,12 +18,14 @@ function KanbanColumn({
   leads,
   now,
   onDiscard,
+  onSchedule,
   archivingId,
 }: {
   stage: LeadStage;
   leads: Lead[];
   now: Date;
   onDiscard: (lead: Lead, reason: DiscardReason, note: string) => void;
+  onSchedule: (lead: Lead, isoDatetime: string | null) => Promise<boolean>;
   archivingId: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage });
@@ -41,6 +50,7 @@ function KanbanColumn({
             lead={lead}
             now={now}
             onDiscard={onDiscard}
+            onSchedule={onSchedule}
             archiving={archivingId === lead.id}
           />
         ))}
@@ -54,14 +64,19 @@ export default function KanbanBoard({
   now,
   onMoveStage,
   onDiscard,
+  onSchedule,
   archivingId,
 }: {
   leads: Lead[];
   now: Date;
   onMoveStage: (lead: Lead, stage: LeadStage) => void;
   onDiscard: (lead: Lead, reason: DiscardReason, note: string) => void;
+  onSchedule: (lead: Lead, isoDatetime: string | null) => Promise<boolean>;
   archivingId: string | null;
 }) {
+  // Sin distancia mínima el drag arrancaría en el pointerdown y se comería los clicks.
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over) return;
@@ -75,7 +90,7 @@ export default function KanbanBoard({
   }
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {LEAD_STAGES.map(({ value }) => (
           <KanbanColumn
@@ -84,6 +99,7 @@ export default function KanbanBoard({
             leads={leads.filter((lead) => lead.stage === value)}
             now={now}
             onDiscard={onDiscard}
+            onSchedule={onSchedule}
             archivingId={archivingId}
           />
         ))}

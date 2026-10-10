@@ -115,6 +115,22 @@ export default function DashboardLeadsPage() {
     }
   }
 
+  // Devuelve si se guardó, para que el modal se cierre solo cuando salió bien.
+  async function handleSchedule(lead: Lead, isoDatetime: string | null): Promise<boolean> {
+    if (!accountId) return false;
+    try {
+      const updated = await api.patch<Lead>(`/accounts/${accountId}/leads/${lead.id}/schedule`, {
+        scheduled_at: isoDatetime,
+      });
+      setLeads((prev) => (prev ? prev.map((l) => (l.id === lead.id ? updated : l)) : prev));
+      showToast(isoDatetime ? "Agenda guardada" : "Agenda quitada");
+      return true;
+    } catch (err) {
+      showToast(err instanceof ApiError ? err.message : "No se pudo guardar la agenda");
+      return false;
+    }
+  }
+
   async function handleArchiveConverted() {
     if (!accountId) return;
     setArchivingConverted(true);
@@ -215,6 +231,7 @@ export default function DashboardLeadsPage() {
         now={now}
         onMoveStage={handleMoveStage}
         onDiscard={handleDiscard}
+        onSchedule={handleSchedule}
         archivingId={archivingId}
       />
 

@@ -23,10 +23,12 @@ export default function MarkdownEditor({
   value,
   onChange,
   placeholder,
+  tall = false,
 }: {
   value: string;
   onChange: (markdown: string) => void;
   placeholder?: string;
+  tall?: boolean;
 }) {
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-background focus-within:border-accent">
@@ -34,7 +36,9 @@ export default function MarkdownEditor({
         markdown={value}
         onChange={onChange}
         placeholder={placeholder}
-        contentEditableClassName={`min-h-28 max-h-56 overflow-y-auto px-3 py-2 ${MARKDOWN_CONTENT_CLASS}`}
+        contentEditableClassName={`overflow-y-auto px-3 py-2 ${
+          tall ? "min-h-56 max-h-80" : "min-h-28 max-h-56"
+        } ${MARKDOWN_CONTENT_CLASS}`}
         plugins={[
           toolbarPlugin({
             toolbarContents: () => (

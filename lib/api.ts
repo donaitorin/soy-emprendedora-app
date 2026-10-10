@@ -38,7 +38,39 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return data as T;
 }
 
+// Descarga un archivo binario (ej. el .xlsx de movimientos). Va aparte de `request` porque
+// esa función asume respuestas JSON. El nombre sale de Content-Disposition si el backend
+// lo expone por CORS; si no, se usa `fallbackFilename`.
+async function download(
+  path: string,
+  fallbackFilename: string
+): Promise<{ blob: Blob; filename: string }> {
+  const token = getToken();
+  const headers = new Headers();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const res = await fetch(`${API_URL}${path}`, { headers });
+
+  if (res.status === 401) {
+    clearToken();
+    if (typeof window !== "undefined") window.location.href = "/login";
+    throw new ApiError(401, "Sesión expirada");
+  }
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    const message =
+      typeof data?.detail === "string" ? data.detail : "Ocurrió un error inesperado";
+    throw new ApiError(res.status, message);
+  }
+
+  const disposition = res.headers.get("Content-Disposition") ?? "";
+  const match = disposition.match(/filename="?([^";]+)"?/i);
+  return { blob: await res.blob(), filename: match?.[1] ?? fallbackFilename };
+}
+
 export const api = {
+  download,
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, {

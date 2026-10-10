@@ -3,10 +3,27 @@
 import { useEffect, useState } from "react";
 import TaskModal from "@/app/dashboard/_components/task-modal";
 import { api, ApiError } from "@/lib/api";
+import { hoursLabel } from "@/lib/home";
 import { toIsoDate } from "@/lib/money";
 import { TASK_PRIORITY_ORDER, taskPriorityLabel } from "@/lib/tasks";
-import type { Task, User } from "@/lib/types";
+import type {
+  PostingStatus,
+  Task,
+  TaskPriority,
+  TaskSuggestionType,
+  UnansweredConversation,
+  User,
+} from "@/lib/types";
 import { PlusIcon } from "../_components/icons";
+import SuggestionsSection from "./_components/suggestions-section";
+
+type TaskPrefill = {
+  title: string;
+  notes: string;
+  priority: TaskPriority;
+  suggestionType: TaskSuggestionType;
+  conversationRef: string | null;
+};
 
 function CheckIcon({ className }: { className?: string }) {
   return (
@@ -34,7 +51,12 @@ export default function DashboardActionsPage() {
   const [accountId, setAccountId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [postingStatus, setPostingStatus] = useState<PostingStatus | null>(null);
+  // null = todavía no sabemos (sigue cargando) — distinto de "ya revisamos y no hay nada".
+  const [unanswered, setUnanswered] = useState<UnansweredConversation[] | null>(null);
+  const [unansweredError, setUnansweredError] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskPrefill, setTaskPrefill] = useState<TaskPrefill | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -55,6 +77,33 @@ export default function DashboardActionsPage() {
         if (cancelled) return;
         setAccountId(account.id);
         setTasks(result);
+
+        // Estos dos dependen de la Graph API de Meta — no bloqueamos las tareas si alguno
+        // falla o no hay conexión activa. `unanswered-conversations` puede tardar hasta 60s
+        // (timeout propio en el backend), por eso tiene su propio estado de carga/error.
+        api
+          .get<PostingStatus>(`/dashboard/${account.id}/posting-status`)
+          .then((status) => {
+            if (!cancelled) setPostingStatus(status);
+          })
+          .catch(() => {
+            if (!cancelled) setPostingStatus(null);
+          });
+
+        api
+          .get<UnansweredConversation[]>(`/dashboard/${account.id}/unanswered-conversations`)
+          .then((conversations) => {
+            if (!cancelled) {
+              setUnanswered(conversations);
+              setUnansweredError(false);
+            }
+          })
+          .catch(() => {
+            if (!cancelled) {
+              setUnanswered([]);
+              setUnansweredError(true);
+            }
+          });
       } catch (err) {
         if (!cancelled) {
           setLoadError(err instanceof ApiError ? err.message : "No se pudieron cargar las tareas");
@@ -75,7 +124,34 @@ export default function DashboardActionsPage() {
   function handleTaskCreated(task: Task) {
     setTasks((prev) => (prev ? [task, ...prev] : [task]));
     setShowTaskModal(false);
+    setTaskPrefill(null);
     showToast("Tarea agregada");
+  }
+
+  function handleCreatePostingTask() {
+    if (!postingStatus) return;
+    setTaskPrefill({
+      title: "Publicar contenido hoy",
+      notes:
+        postingStatus.days_since_last_post === null
+          ? "Todavía no publicaste contenido en tu Instagram conectado."
+          : `Llevás ${postingStatus.days_since_last_post} ${
+              postingStatus.days_since_last_post === 1 ? "día" : "días"
+            } sin publicar`,
+      priority: "alta",
+      suggestionType: "posting_reminder",
+      conversationRef: null,
+    });
+  }
+
+  function handleCreateConversationTask(conversation: UnansweredConversation) {
+    setTaskPrefill({
+      title: `Responder a ${conversation.contact_name}`,
+      notes: `Lleva ${hoursLabel(conversation.hours_since_last_message)} sin seguimiento`,
+      priority: "alta",
+      suggestionType: "unanswered_conversation",
+      conversationRef: conversation.conversation_id,
+    });
   }
 
   async function handleToggle(task: Task) {
@@ -112,6 +188,12 @@ export default function DashboardActionsPage() {
   const total = tasks.length;
   const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
   const allDone = total > 0 && doneCount === total;
+  const hasPostingTaskToday = tasks.some((t) => t.suggestion_type === "posting_reminder");
+  const respondedConversationRefs = new Set(
+    tasks
+      .filter((t) => t.suggestion_type === "unanswered_conversation" && t.conversation_ref)
+      .map((t) => t.conversation_ref as string)
+  );
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">
@@ -153,6 +235,16 @@ export default function DashboardActionsPage() {
           </div>
         </div>
       )}
+
+      <SuggestionsSection
+        postingStatus={postingStatus}
+        unanswered={unanswered}
+        unansweredError={unansweredError}
+        hasPostingTaskToday={hasPostingTaskToday}
+        respondedConversationRefs={respondedConversationRefs}
+        onCreatePostingTask={handleCreatePostingTask}
+        onCreateConversationTask={handleCreateConversationTask}
+      />
 
       {total === 0 && <p className="text-sm text-secondary">No hay tareas para hoy todavía.</p>}
 
@@ -206,6 +298,19 @@ export default function DashboardActionsPage() {
         <TaskModal
           accountId={accountId}
           onClose={() => setShowTaskModal(false)}
+          onCreated={handleTaskCreated}
+        />
+      )}
+
+      {taskPrefill && (
+        <TaskModal
+          accountId={accountId}
+          initialTitle={taskPrefill.title}
+          initialNotes={taskPrefill.notes}
+          initialPriority={taskPrefill.priority}
+          suggestionType={taskPrefill.suggestionType}
+          conversationRef={taskPrefill.conversationRef}
+          onClose={() => setTaskPrefill(null)}
           onCreated={handleTaskCreated}
         />
       )}
